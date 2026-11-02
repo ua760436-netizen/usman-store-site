@@ -1,0 +1,2471 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Usman Store — Gaming Store</title>
+<meta name="description" content="Premium gaming store for cricket games, jerseys, mods and downloads.">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.gstatic.com">
+<link rel="preconnect" href="https://firestore.googleapis.com">
+<link rel="preconnect" href="https://res.cloudinary.com">
+<link rel="preconnect" href="https://api.cloudinary.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Firebase (compat SDK, single-file friendly) -->
+
+<style>
+/* ============================================================
+   AHMAD STORE — Design tokens
+   Palette: void #0A0714, panel #130F24, glass rgba(255,255,255,.04)
+   Neon: cyan #35E6E1, purple #9B5CFF, pink #FF3EC9, blue #3E7CFF
+   Type: Orbitron (display / brand), Inter (body / UI)
+   ============================================================ */
+:root{
+  color-scheme:dark;
+  --bg:#08060f;
+  --bg2:#100b1f;
+  --page-bg: radial-gradient(ellipse 900px 550px at 15% -5%, rgba(255,62,201,.24), transparent 62%), radial-gradient(ellipse 800px 550px at 100% 8%, rgba(155,92,255,.15), transparent 58%), linear-gradient(180deg, #090510 0%, #0b0713 45%, #060409 100%);
+  --panel:rgba(255,255,255,0.045);
+  --panel-border:rgba(255,255,255,0.09);
+  --cyan:#35e6e1;
+  --purple:#9b5cff;
+  --pink:#ff3ec9;
+  --blue:#3e7cff;
+  --text:#f2eefc;
+  --muted:#a79dc6;
+  --muted2:#6d6390;
+  --grad-brand: linear-gradient(135deg, var(--cyan), var(--purple) 55%, var(--pink));
+  --grad-pink: linear-gradient(135deg, #b23bff, #ff3ec9);
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-pill: 999px;
+  --shadow-glow: 0 0 24px rgba(155,92,255,.35), 0 0 48px rgba(255,62,201,.12);
+  --transition: 220ms cubic-bezier(.2,.8,.2,1);
+}
+[data-theme="light"]{
+  color-scheme:light;
+  --bg:#ffffff;
+  --bg2:#f7f8fc;
+  --page-bg:linear-gradient(180deg,#ffffff 0%,#f7f8fc 55%,#f1f3f8 100%);
+  --bg2:#ffffff;
+  --panel:rgba(255,255,255,0.92);
+  --panel-border:rgba(20,30,55,0.13);
+  --text:#160f2b;
+  --muted:#564d75;
+  --muted2:#8880a3;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  min-height:100vh;
+  position:relative;
+  background:var(--page-bg);
+  color:var(--text);
+  font-family:'Inter',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  transition:background var(--transition), color var(--transition);
+  overflow-x:hidden;
+}
+body::after{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(circle at 50% 15%, rgba(255,62,201,.16), transparent 55%);
+  animation:pulseGlow 7s ease-in-out infinite;
+}
+[data-theme="light"] body::after{display:none;}
+@keyframes pulseGlow{0%,100%{opacity:.35}50%{opacity:.85}}
+::selection{background:rgba(155,92,255,.4);}
+::-webkit-scrollbar{height:8px;width:8px;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:8px;}
+.brand-font{font-family:'Orbitron',sans-serif;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+img{max-width:100%;display:block;}
+
+/* Utility glass */
+.glass{
+  background:var(--panel);
+  border:1px solid var(--panel-border);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+
+/* ---------- Header ---------- */
+.site-header{
+  position:sticky;top:0;z-index:40;
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px;
+  background:rgba(8,6,15,.65);
+  border-bottom:1px solid var(--panel-border);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+}
+[data-theme="light"] .site-header{background:rgba(255,255,255,.7);}
+.logo-mark{
+  width:44px;height:44px;flex:0 0 auto;border-radius:14px;
+  background:var(--grad-pink);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Orbitron',sans-serif;font-weight:800;color:#fff;font-size:19px;
+  box-shadow:0 0 18px rgba(255,62,201,.55);overflow:hidden;
+}
+.logo-mark img{width:100%;height:100%;object-fit:cover;}
+.search-wrap{flex:1;position:relative;min-width:0;}
+.search-wrap input{
+  width:100%;padding:12px 44px 12px 18px;border-radius:var(--radius-pill);
+  border:1px solid var(--panel-border);background:var(--panel);color:var(--text);
+  font-size:14px;outline:none;transition:border-color var(--transition),box-shadow var(--transition);
+}
+.search-wrap input::placeholder{color:var(--muted2);}
+.search-wrap input:focus{border-color:rgba(155,92,255,.6);box-shadow:0 0 0 3px rgba(155,92,255,.18);}
+.search-wrap svg{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted);pointer-events:none;}
+.icon-btn{
+  flex:0 0 auto;width:42px;height:42px;border-radius:50%;border:1px solid var(--panel-border);
+  background:var(--panel);display:flex;align-items:center;justify-content:center;color:var(--text);
+  transition:transform var(--transition),box-shadow var(--transition);position:relative;
+}
+.icon-btn:active{transform:scale(.92);}
+.wishlist-btn{background:var(--grad-pink);border:none;box-shadow:0 0 16px rgba(255,62,201,.5);color:#fff;}
+.wishlist-count{
+  position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;
+  background:#fff;color:#c0129b;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;
+}
+.theme-toggle svg{width:19px;height:19px;}
+
+/* ---------- Hero ---------- */
+.banner-wrap{
+  position:relative;margin:10px 16px 4px;border-radius:20px;overflow:hidden;
+  border:2px solid rgba(255,62,201,.5);
+  animation:borderGlow 4s ease-in-out infinite;
+}
+.banner-inner{
+  position:relative;border-radius:18px;overflow:hidden;background:#150f28;
+}
+@keyframes borderGlow{
+  0%,100%{box-shadow:0 0 22px rgba(255,62,201,.45), 0 0 42px rgba(53,230,225,.2); border-color:rgba(255,62,201,.6);}
+  33%{box-shadow:0 0 22px rgba(155,92,255,.45), 0 0 42px rgba(255,62,201,.2); border-color:rgba(155,92,255,.6);}
+  66%{box-shadow:0 0 22px rgba(53,230,225,.45), 0 0 42px rgba(155,92,255,.2); border-color:rgba(53,230,225,.6);}
+}
+.banner-track{
+  display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;
+}
+.banner-track::-webkit-scrollbar{display:none;}
+.banner-track a, .banner-track div.banner-slide{
+  flex:0 0 100%;scroll-snap-align:start;display:block;aspect-ratio:16/7;background:#150f28;
+}
+.banner-track img{width:100%;height:100%;object-fit:cover;display:block;}
+.banner-dots{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:6px;}
+.banner-dots span{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.35);transition:width var(--transition),background var(--transition);}
+.banner-dots span.on{width:18px;border-radius:4px;background:var(--grad-pink);}
+.hero{padding:44px 16px 8px;text-align:center;}
+.eyebrow{
+  font-family:'Orbitron',sans-serif;
+  letter-spacing:clamp(0.5px,0.9vw,4px);
+  font-size:clamp(9px,3.4vw,12px);
+  white-space:nowrap;
+  display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:14px;
+  background:var(--grad-brand);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:hueflow 5s linear infinite;
+  filter:drop-shadow(0 0 10px rgba(155,92,255,.4));
+}
+.hero h1{
+  font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(30px,8vw,54px);
+  margin:0 0 14px;line-height:1.05;letter-spacing:1px;
+  background:var(--grad-brand);-webkit-background-clip:text;background-clip:text;color:transparent;
+  background-size:200% auto;animation:hueflow 7s linear infinite;
+  text-shadow:0 0 40px rgba(155,92,255,.25);
+}
+@keyframes hueflow{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+.hero p{color:var(--muted);max-width:520px;margin:0 auto;font-size:15px;line-height:1.6;}
+
+.stats{display:flex;justify-content:center;gap:clamp(20px,8vw,56px);margin:34px 0 6px;flex-wrap:wrap;}
+.payment-badge{
+  display:inline-flex;align-items:center;gap:6px;margin:24px auto 0;padding:9px 18px;border-radius:var(--radius-pill);
+  background:rgba(255,255,255,.04);border:1px solid var(--panel-border);font-size:12px;color:var(--muted);
+  box-shadow:0 0 14px rgba(155,92,255,.15);
+}
+.payment-badge span{color:var(--cyan);font-weight:700;}
+.stat{text-align:center;}
+.stat-icon{
+  width:32px;height:32px;margin:0 auto 8px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,rgba(62,124,255,.18),rgba(155,92,255,.18));border:1px solid rgba(155,92,255,.3);font-size:14px;
+}
+.stat .num{
+  font-family:'Orbitron',sans-serif;font-weight:800;font-size:26px;
+  background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.stat .lbl{font-size:11px;letter-spacing:2px;color:var(--muted2);margin-top:2px;text-transform:uppercase;}
+
+/* ---------- Categories & filters ---------- */
+.section-label{
+  font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:3px;color:var(--muted);
+  padding:0 20px;margin:30px 0 12px;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;
+}
+.scroll-row{display:flex;gap:10px;overflow-x:auto;padding:2px 20px 10px;scrollbar-width:none;}
+.scroll-row::-webkit-scrollbar{display:none;}
+.pill{
+  flex:0 0 auto;padding:11px 20px;border-radius:var(--radius-pill);font-size:13.5px;font-weight:600;
+  border:1px solid var(--panel-border);background:var(--panel);color:var(--text);white-space:nowrap;
+  transition:transform var(--transition),box-shadow var(--transition),background var(--transition);
+  display:flex;align-items:center;gap:6px;
+}
+.pill:active{transform:scale(.95);}
+.pill.active{
+  background:var(--grad-pink);border-color:transparent;color:#fff;
+  box-shadow:0 0 20px rgba(255,62,201,.45);
+}
+.pill.sort.active{background:linear-gradient(135deg,var(--purple),var(--blue));box-shadow:0 0 20px rgba(155,92,255,.4);}
+.gear-btn{
+  width:38px;height:38px;border-radius:12px;border:1px solid var(--panel-border);background:var(--panel);
+  display:flex;align-items:center;justify-content:center;color:var(--muted);
+}
+
+/* ---------- Product grid ---------- */
+.product-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:14px 16px 40px;
+}
+@media(min-width:640px){.product-grid{grid-template-columns:repeat(3,1fr);padding:14px 24px 50px;}}
+@media(min-width:980px){.product-grid{grid-template-columns:repeat(4,1fr);max-width:1200px;margin:0 auto;}}
+.card{
+  border-radius:var(--radius-lg);overflow:hidden;position:relative;display:flex;flex-direction:column;
+  transition:transform var(--transition),box-shadow var(--transition),border-color var(--transition);
+}
+.card:active{transform:scale(.98);}
+@media(hover:hover){.card:hover{transform:translateY(-4px);border-color:rgba(155,92,255,.5);box-shadow:var(--shadow-glow);}}
+.card .img-wrap{position:relative;aspect-ratio:4/3;background:linear-gradient(135deg,#1a1330,#0d0a1a);overflow:hidden;}
+.card .img-wrap img{width:100%;height:100%;object-fit:contain;padding:4px;transition:transform .4s ease;}
+.zoom-btn{
+  position:absolute;top:8px;left:8px;width:30px;height:30px;border-radius:50%;
+  background:rgba(10,7,20,.55);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;z-index:2;
+}
+.card:hover .img-wrap img{transform:scale(1.06);}
+.wish-heart{
+  position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;
+  background:rgba(10,7,20,.55);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;z-index:2;
+}
+.wish-heart.active{color:var(--pink);}
+.card-body{padding:12px 12px 14px;display:flex;flex-direction:column;gap:6px;flex:1;}
+.card-title{font-size:13.5px;font-weight:600;line-height:1.35;white-space:normal;word-break:break-word;}
+.card-price{
+  font-family:'Orbitron',sans-serif;font-weight:800;font-size:16px;
+  background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.card-rating{display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--muted);}
+.card-desc{font-size:12px;color:var(--muted);line-height:1.5;}
+.read-more-btn{background:none;border:none;color:var(--cyan);font-size:11.5px;font-weight:600;padding:0;text-align:left;}
+.card-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:8px;} .card-actions .btn-download{min-height:50px;}
+.btn{
+  border:none;border-radius:12px;padding:10px 12px;font-size:12.5px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:6px;transition:transform var(--transition),filter var(--transition);
+}
+.btn:active{transform:scale(.95);}
+.btn-whatsapp{flex:1;background:linear-gradient(135deg,#25D366,#1aa851);color:#fff;box-shadow:0 0 14px rgba(37,211,102,.35);}
+.btn-download{position:relative;isolation:isolate;flex:1 1 100%;width:100%;min-height:54px;padding:10px 18px;border:2px solid transparent;border-radius:15px;color:#eafaff;background:linear-gradient(#101827,#101827) padding-box,conic-gradient(from var(--rgb-angle,0deg),#ff3b6b,#ffb52e,#6bff8b,#36d9ff,#a56bff,#ff3bcb,#ff3b6b) border-box;box-shadow:0 0 9px #39dfff88,0 0 18px #b44dff55,inset 0 0 14px #36d9ff22;text-shadow:0 0 9px #52dfff;font-size:14px;font-weight:900;letter-spacing:1.8px;animation:rgbDownloadGlow 5s linear infinite;overflow:hidden}.btn-download::before{content:"";position:absolute;inset:-2px;z-index:-1;border-radius:inherit;background:conic-gradient(from var(--rgb-angle,0deg),#ff3b6b,#ffb52e,#6bff8b,#36d9ff,#a56bff,#ff3bcb,#ff3b6b);filter:blur(10px);opacity:.55}.btn-download .download-icon{width:25px;height:25px;filter:drop-shadow(0 0 5px #61e8ff)}@keyframes rgbDownloadGlow{to{--rgb-angle:360deg}}@property --rgb-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
+.btn-share{flex:0 0 auto;width:38px;background:var(--panel);border:1px solid var(--panel-border);color:var(--text);}
+
+.empty-state{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-state svg{width:56px;height:56px;opacity:.5;margin-bottom:14px;}
+
+/* ---------- Floating buttons ---------- */
+.fab{
+  position:fixed;bottom:22px;width:54px;height:54px;border-radius:50%;z-index:35;
+  display:flex;align-items:center;justify-content:center;color:#fff;border:none;
+  box-shadow:0 6px 24px rgba(0,0,0,.4);transition:transform var(--transition),opacity var(--transition);
+}
+.fab:active{transform:scale(.9);}
+.fab-whatsapp{right:18px;background:linear-gradient(135deg,#25D366,#1aa851);box-shadow:0 0 22px rgba(37,211,102,.55);}
+.fab-top{right:18px;bottom:84px;width:44px;height:44px;background:var(--panel);border:1px solid var(--panel-border);color:var(--text);backdrop-filter:blur(10px);opacity:0;pointer-events:none;}
+.fab-top.show{opacity:1;pointer-events:auto;}
+
+/* ---------- Footer / social ---------- */
+.footer{padding:50px 20px 100px;text-align:center;}
+.footer-subtitle{font-size:12px;color:var(--muted2);margin-top:-8px;margin-bottom:18px;}
+.footer-title{font-family:'Orbitron',sans-serif;font-size:13px;letter-spacing:3px;color:var(--muted);margin-bottom:18px;text-transform:uppercase;}
+.social-row{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;}
+.social-btn{
+  display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 18px;border-radius:18px;
+  min-width:96px;transition:transform var(--transition);
+}
+.social-btn:active{transform:scale(.94);}
+.social-icon{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;}
+.social-label{font-size:11px;color:var(--muted);}
+.footer-copy{margin-top:36px;font-size:11.5px;color:var(--muted2);}
+
+
+.legal-links{display:flex;justify-content:center;align-items:center;gap:9px;flex-wrap:wrap;margin:24px auto 0;font-size:12px}.legal-links a{color:var(--muted);text-decoration:none}.legal-links a:hover{color:var(--text);text-decoration:underline}.legal-content{max-width:760px;margin:18px auto 0;text-align:left}.legal-content details{border:1px solid var(--panel-border);border-radius:12px;background:var(--panel);margin:9px 0;padding:0 14px}.legal-content summary{cursor:pointer;list-style:none;padding:13px 0;font-size:13px;font-weight:700;color:var(--text)}.legal-content summary::-webkit-details-marker{display:none}.legal-content summary:after{content:'＋';float:right;color:var(--muted)}.legal-content details[open] summary:after{content:'−'}.legal-content details div{padding:0 0 13px;color:var(--muted);font-size:12px;line-height:1.7}.legal-content p{margin:7px 0}
+
+/* ---------- Modals ---------- */
+.overlay{
+  position:fixed;inset:0;background:rgba(5,3,10,.72);backdrop-filter:blur(6px);z-index:100;
+  display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity var(--transition);
+}
+.overlay.show{opacity:1;pointer-events:auto;}
+@media(min-width:640px){.overlay{align-items:center;}}
+.modal{
+  width:100%;max-width:480px;max-height:88vh;overflow-y:auto;
+  background:linear-gradient(180deg,#150f28,#0c0918);border:1px solid var(--panel-border);
+  border-radius:24px 24px 0 0;padding:24px 20px 30px;transform:translateY(20px);transition:transform var(--transition);
+  box-shadow:0 -10px 50px rgba(155,92,255,.15);
+}
+[data-theme="light"] .modal{background:linear-gradient(180deg,#ffffff,#f5f2fe);}
+.overlay.show .modal{transform:translateY(0);}
+@media(min-width:640px){.modal{border-radius:24px;}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.modal-head h3{font-family:'Orbitron',sans-serif;font-size:16px;margin:0;letter-spacing:1px;}
+.modal-close{width:34px;height:34px;border-radius:50%;border:1px solid var(--panel-border);background:var(--panel);color:var(--text);display:flex;align-items:center;justify-content:center;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600;}
+.field input,.field textarea,.field select{
+  width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--panel-border);
+  background:rgba(255,255,255,.03);color:var(--text);font-size:14px;outline:none;font-family:inherit;
+  transition:border-color var(--transition);
+}
+[data-theme="light"] .field input,[data-theme="light"] .field textarea,[data-theme="light"] .field select{background:rgba(0,0,0,.03);}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--purple);}
+.field textarea{resize:vertical;min-height:70px;}
+.field-hint{font-size:11px;color:var(--muted2);margin-top:5px;}
+.btn-primary{
+  width:100%;padding:13px;border-radius:14px;background:var(--grad-pink);color:#fff;font-weight:700;font-size:14px;border:none;
+  box-shadow:0 0 18px rgba(255,62,201,.4);
+}
+.btn-secondary{
+  width:100%;padding:13px;border-radius:14px;background:var(--panel);border:1px solid var(--panel-border);color:var(--text);font-weight:600;font-size:14px;margin-top:8px;
+}
+.btn-danger{background:linear-gradient(135deg,#ff4d4d,#c0292f);color:#fff;border:none;box-shadow:0 0 14px rgba(255,77,77,.4);}
+.error-text{color:#ff6b6b;font-size:12.5px;margin-top:10px;text-align:center;}
+.upload-progress{height:6px;border-radius:4px;background:var(--panel);overflow:hidden;margin-top:8px;}
+.upload-progress-bar{height:100%;background:var(--grad-brand);width:0%;transition:width .2s;}
+.img-preview{width:100%;aspect-ratio:1/1;border-radius:14px;object-fit:contain;margin-top:8px;background:var(--panel);}
+
+/* ---------- Admin dashboard ---------- */
+.admin-shell{position:fixed;inset:0;z-index:90;display:flex;background:var(--bg);opacity:0;pointer-events:none;transition:opacity var(--transition);}
+.admin-shell.show{opacity:1;pointer-events:auto;}
+.admin-sidebar{
+  width:220px;flex:0 0 auto;background:linear-gradient(180deg,#130f24,#0a0716);border-right:1px solid var(--panel-border);
+  padding:20px 14px;display:flex;flex-direction:column;gap:4px;overflow-y:auto;transition:transform var(--transition);
+}
+.admin-sidebar h4{font-family:'Orbitron',sans-serif;font-size:14px;padding:0 10px 16px;letter-spacing:1px;
+  background:var(--grad-brand);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.admin-nav-item{
+  display:flex;align-items:center;gap:10px;padding:12px 12px;border-radius:12px;color:var(--muted);font-size:13.5px;font-weight:600;
+  border:none;background:none;text-align:left;width:100%;transition:background var(--transition),color var(--transition),box-shadow var(--transition);
+  position:relative;
+}
+.admin-nav-item::before{
+  content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:0;border-radius:3px;
+  background:var(--grad-pink);transition:height var(--transition);
+}
+.admin-nav-item.active{background:rgba(155,92,255,.14);color:var(--text);box-shadow:0 0 18px rgba(155,92,255,.22),inset 0 0 0 1px rgba(155,92,255,.35);}
+.admin-nav-item.active::before{height:60%;box-shadow:0 0 10px rgba(255,62,201,.8);}
+.admin-nav-item.logout{margin-top:auto;color:#ff6b6b;}
+.admin-main{flex:1;overflow-y:auto;padding:20px;min-width:0;}
+.admin-topbar{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+.admin-theme-btn{margin-left:auto;}
+.admin-menu-btn{display:none;width:38px;height:38px;border-radius:10px;border:1px solid var(--panel-border);background:var(--panel);color:var(--text);align-items:center;justify-content:center;}
+.admin-title{font-family:'Orbitron',sans-serif;font-size:18px;background:var(--grad-brand);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.admin-panel{display:none;}
+.admin-panel.active{display:block;}
+.admin-card{border-radius:18px;padding:16px;margin-bottom:14px;position:relative;overflow:hidden;}
+.admin-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad-brand);opacity:.55;}
+.admin-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--panel-border);}
+.admin-row:last-child{border-bottom:none;}
+.admin-row-info{min-width:0;flex:1;}
+.admin-row-title{font-weight:600;font-size:13.5px;}
+.admin-row-sub{font-size:11.5px;color:var(--muted);margin-top:2px;}
+.admin-row-actions{display:flex;gap:8px;flex:0 0 auto;}
+.icon-sm-btn{width:32px;height:32px;border-radius:9px;border:1px solid var(--panel-border);background:var(--panel);color:var(--text);display:flex;align-items:center;justify-content:center;transition:box-shadow var(--transition),border-color var(--transition);}
+.icon-sm-btn:active{box-shadow:0 0 12px rgba(155,92,255,.4);border-color:rgba(155,92,255,.5);}
+.icon-sm-btn.danger{color:#ff6b6b;}
+.fab-add{
+  position:fixed;bottom:20px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--grad-pink);color:#fff;border:none;
+  box-shadow:0 0 20px rgba(255,62,201,.5);font-size:24px;z-index:5;
+}
+.admin-sidebar{box-shadow:inset -1px 0 0 rgba(155,92,255,.08);}
+.gallery-thumb{position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;flex:0 0 auto;border:1px solid var(--panel-border);}
+.gallery-thumb img{width:100%;height:100%;object-fit:contain;background:var(--bg2);}
+.gallery-thumb .rm{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;border:none;}
+.pd-gallery{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;border-radius:14px;gap:0;scrollbar-width:none;}
+.pd-gallery::-webkit-scrollbar{display:none;}
+.pd-gallery img{width:100%;flex:0 0 100%;scroll-snap-align:start;aspect-ratio:4/3;object-fit:contain;background:var(--bg2);cursor:zoom-in;}
+.lightbox-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:250;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity var(--transition);padding:20px;
+}
+.lightbox-overlay.show{opacity:1;pointer-events:auto;}
+.lightbox-overlay img{max-width:100%;max-height:90vh;border-radius:12px;object-fit:contain;}
+.lightbox-close{position:absolute;top:16px;right:16px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.pd-dots{display:flex;justify-content:center;gap:6px;margin-top:8px;}
+.pd-dots span{width:6px;height:6px;border-radius:50%;background:var(--panel-border);}
+.pd-dots span.on{background:var(--grad-pink);width:16px;border-radius:4px;}
+.related-row{display:flex;gap:10px;overflow-x:auto;margin-top:6px;padding-bottom:4px;scrollbar-width:none;}
+.related-row::-webkit-scrollbar{display:none;}
+.related-item{flex:0 0 auto;width:100px;cursor:pointer;}
+.related-item img{width:100px;height:100px;border-radius:12px;object-fit:cover;border:1px solid var(--panel-border);}
+.related-item .rt{font-size:11px;margin-top:4px;line-height:1.3;color:var(--muted);}
+.related-item .rp{font-size:11.5px;font-weight:700;color:var(--cyan);}
+.coupon-row{display:flex;gap:8px;margin-top:12px;}
+.coupon-row input{flex:1;}
+.coupon-row button{flex:0 0 auto;padding:0 16px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;font-weight:700;font-size:12.5px;}
+.price-strike{color:var(--muted2);text-decoration:line-through;font-size:14px;margin-right:8px;}
+@media(max-width:760px){
+  .admin-sidebar{position:fixed;top:0;bottom:0;left:0;transform:translateX(-100%);z-index:20;box-shadow:20px 0 40px rgba(0,0,0,.4);}
+  .admin-sidebar.open{transform:translateX(0);}
+  .admin-menu-btn{display:flex;}
+}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px;}
+.mini-stat{border-radius:16px;padding:14px;position:relative;box-shadow:0 0 0 1px rgba(255,255,255,.02);}
+.mini-stat .n{font-family:'Orbitron',sans-serif;font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.mini-stat .l{font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:.5px;text-transform:uppercase;}
+
+/* ---------- Toasts ---------- */
+.toast-stack{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;width:min(92vw,380px);}
+.toast{
+  padding:12px 16px;border-radius:14px;font-size:13px;font-weight:600;color:#fff;
+  box-shadow:0 8px 24px rgba(0,0,0,.35);animation:toastIn .25s ease;display:flex;align-items:center;gap:8px;
+}
+@keyframes toastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.toast.success{background:linear-gradient(135deg,#25D366,#1aa851);}
+.toast.error{background:linear-gradient(135deg,#ff4d4d,#c0292f);}
+.toast.info{background:linear-gradient(135deg,var(--purple),var(--blue));}
+
+.spinner{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.center-spinner{display:flex;justify-content:center;padding:40px 0;}
+.center-spinner .spinner{width:30px;height:30px;border-width:3px;border-color:rgba(155,92,255,.25);border-top-color:var(--purple);}
+
+.hidden{display:none !important;}
+.star-input{display:flex;gap:6px;justify-content:center;margin:6px 0 4px;}
+.star-input button{background:none;border:none;font-size:26px;color:var(--muted2);}
+.star-input button.on{color:#ffcf3e;}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+body.is-backgrounded .spinner{animation-play-state:paused!important}
+.card .img-wrap img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
+.banner-track img{width:100%;height:100%;object-fit:cover}
+
+
+/* ---------- Complete white/black themes ---------- */
+[data-theme="light"] body{background:var(--page-bg);color:var(--text);}
+[data-theme="light"] .site-header{background:rgba(255,255,255,.92);}
+[data-theme="light"] .banner-inner,[data-theme="light"] .banner-track a,[data-theme="light"] .banner-track div.banner-slide{background:#eef1f7;}
+[data-theme="light"] .card .img-wrap{background:linear-gradient(135deg,#eef1f7,#e4e8f0);}
+[data-theme="light"] .zoom-btn,[data-theme="light"] .wish-heart{background:rgba(25,32,48,.72);color:#fff;}
+[data-theme="light"] .admin-sidebar{background:linear-gradient(180deg,#ffffff,#f3f5fa);}
+[data-theme="light"] .admin-shell{background:var(--bg);}
+[data-theme="light"] .admin-card{background:rgba(255,255,255,.96);}
+[data-theme="light"] .payment-badge{background:rgba(255,255,255,.85);}
+[data-theme="light"] .stat-icon{background:linear-gradient(135deg,rgba(62,124,255,.10),rgba(155,92,255,.10));}
+[data-theme="light"] ::-webkit-scrollbar-thumb{background:rgba(30,40,60,.22);}
+[data-theme="light"] .field input,[data-theme="light"] .field textarea,[data-theme="light"] .field select{color:var(--text);}
+[data-theme="dark"] .admin-sidebar{background:linear-gradient(180deg,#130f24,#0a0716);}
+
+/* Keep mobile scrolling responsive on lower-powered phones. */
+@media(max-width:640px){
+  .glass,.site-header,.fab-top,.zoom-btn,.wish-heart{backdrop-filter:none;-webkit-backdrop-filter:none;}
+  body::after{animation:none;}
+  .banner-wrap{animation:none;}
+  .hero h1,.eyebrow{animation:none;}
+  .card .img-wrap img{transition:none;}
+  .card:active{transform:none;}
+  .card{contain:layout paint;}
+}
+
+/* ---------- Luxury charcoal + champagne gold theme ---------- */
+:root{
+  --bg:#090a0c;
+  --bg2:#141518;
+  --page-bg:radial-gradient(ellipse 900px 520px at 50% -12%,rgba(198,161,91,.13),transparent 62%),linear-gradient(180deg,#090a0c 0%,#111316 52%,#08090b 100%);
+  --panel:rgba(255,255,255,.055);
+  --panel-border:rgba(198,161,91,.20);
+  --cyan:#e5cf9a;
+  --purple:#c6a15b;
+  --pink:#b58b43;
+  --blue:#d7b875;
+  --text:#f5f3ed;
+  --muted:#c1baaa;
+  --muted2:#918875;
+  --grad-brand:linear-gradient(135deg,#f0dda9 0%,#c6a15b 52%,#8f6b32 100%);
+  --grad-pink:linear-gradient(135deg,#f0dda9 0%,#c6a15b 55%,#9a7438 100%);
+  --shadow-glow:0 8px 28px rgba(0,0,0,.32),0 0 22px rgba(198,161,91,.12);
+}
+[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#090a0c;--bg2:#141518;
+  --page-bg:radial-gradient(ellipse 900px 520px at 50% -12%,rgba(198,161,91,.13),transparent 62%),linear-gradient(180deg,#090a0c 0%,#111316 52%,#08090b 100%);
+  --panel:rgba(255,255,255,.055);--panel-border:rgba(198,161,91,.20);
+  --text:#f5f3ed;--muted:#c1baaa;--muted2:#918875;
+  --cyan:#e5cf9a;--purple:#c6a15b;--pink:#b58b43;--blue:#d7b875;
+  --grad-brand:linear-gradient(135deg,#f0dda9 0%,#c6a15b 52%,#8f6b32 100%);
+  --grad-pink:linear-gradient(135deg,#f0dda9 0%,#c6a15b 55%,#9a7438 100%);
+}
+[data-theme="light"]{
+  color-scheme:light;
+  --bg:#fffefa;--bg2:#f5f1e7;
+  --page-bg:linear-gradient(180deg,#fffefa 0%,#faf7ef 58%,#f1eadb 100%);
+  --panel:rgba(255,255,255,.96);--panel-border:rgba(145,107,45,.20);
+  --text:#242019;--muted:#625b4e;--muted2:#817765;
+  --cyan:#9a742f;--purple:#a47d39;--pink:#b58b43;--blue:#c09a55;
+  --grad-brand:linear-gradient(135deg,#79551e 0%,#a47d39 52%,#c6a15b 100%);
+  --grad-pink:linear-gradient(135deg,#79551e 0%,#a47d39 55%,#c6a15b 100%);
+  --shadow-glow:0 8px 24px rgba(74,54,20,.10);
+}
+body::after{background:radial-gradient(circle at 50% 10%,rgba(198,161,91,.10),transparent 58%);}
+::selection{background:rgba(198,161,91,.28);}
+.search-wrap input:focus{border-color:rgba(198,161,91,.85);box-shadow:0 0 0 3px rgba(198,161,91,.16);}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--purple);}
+.logo-mark{box-shadow:0 5px 18px rgba(0,0,0,.22),0 0 16px rgba(198,161,91,.14);}
+.wishlist-btn{box-shadow:0 5px 16px rgba(0,0,0,.20);}
+[data-theme="light"] .site-header{background:rgba(255,254,250,.95);}
+[data-theme="light"] .admin-sidebar{background:linear-gradient(180deg,#fffefa,#f1eadb);}
+[data-theme="light"] .admin-shell{background:#faf7ef;}
+[data-theme="light"] .banner-inner,[data-theme="light"] .banner-track a,[data-theme="light"] .banner-track div.banner-slide{background:#f5efdf;}
+[data-theme="light"] .card .img-wrap{background:linear-gradient(135deg,#f7f2e7,#eee5d2);}
+[data-theme="dark"] .admin-sidebar{background:linear-gradient(180deg,#1a1711,#090a0c);}
+
+/* ---------- Moving RGB typography: welcome line + main store title only ---------- */
+:root{
+  --rgb-text-flow:linear-gradient(90deg,#ff3158 0%,#ff9d28 16%,#f7e84a 30%,#36df82 45%,#27c9ff 60%,#765bff 76%,#ee4bd5 90%,#ff3158 100%);
+}
+@keyframes storeTextRgbFlow{
+  0%{background-position:0% 50%;}
+  100%{background-position:300% 50%;}
+}
+/* The two prominent welcome/store texts continuously cycle through RGB colours. */
+#heroTitle,.eyebrow{
+  background-image:var(--rgb-text-flow)!important;
+  background-size:300% 100%!important;
+  background-position:0% 50%;
+  -webkit-background-clip:text!important;
+  background-clip:text!important;
+  -webkit-text-fill-color:transparent!important;
+  color:transparent!important;
+  animation:storeTextRgbFlow 9s linear infinite!important;
+  filter:drop-shadow(0 0 7px rgba(65,190,255,.16));
+}
+@media(prefers-reduced-motion:reduce){
+  #heroTitle,.eyebrow{animation:none!important;background-position:50% 50%!important;}
+}
+
+
+/* ---------- Performance + recently viewed ---------- */
+.recent-wrap{margin:4px 0 2px;}
+.recent-row{display:flex;gap:12px;overflow-x:auto;padding:2px 16px 12px;scrollbar-width:none;overscroll-behavior-x:contain;}
+.recent-row::-webkit-scrollbar{display:none;}
+.recent-item{flex:0 0 142px;min-width:142px;overflow:hidden;border:1px solid var(--panel-border);border-radius:15px;background:var(--panel);cursor:pointer;}
+.recent-item img{width:100%;height:92px;object-fit:cover;background:var(--bg2);}
+.recent-item .recent-name{font-size:11px;font-weight:700;padding:8px 9px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.recent-item .recent-price{font-family:'Orbitron',sans-serif;font-size:11px;font-weight:800;color:var(--purple);padding:0 9px 9px;}
+.recent-clear{border:1px solid var(--panel-border);background:var(--panel);color:var(--muted);border-radius:999px;padding:6px 11px;font-size:11px;font-weight:700;}
+.card{content-visibility:auto;contain-intrinsic-size:340px 420px;}
+.product-grid{align-items:start;}
+img{background-color:transparent;}
+@media(max-width:640px){
+  .recent-item{flex-basis:128px;min-width:128px;}
+  .recent-item img{height:84px;}
+  .card{contain:layout paint;}
+  .site-header{backdrop-filter:none;-webkit-backdrop-filter:none;}
+}
+@media(prefers-reduced-motion:reduce){
+  .recent-row{scroll-behavior:auto;}
+  .card,.recent-item,.pill,.btn{transition:none!important;}
+}
+
+
+/* ---------- Usman Store: white theme only ---------- */
+:root{color-scheme:light!important;--bg:#fffefa;--bg2:#f7f4ec;--page-bg:linear-gradient(180deg,#ffffff 0%,#fbfaf6 58%,#f3efe5 100%);--panel:rgba(255,255,255,.98);--panel-border:rgba(145,107,45,.18);--text:#242019;--muted:#625b4e;--muted2:#817765;}
+html,body{background:#fffefa!important;color:#242019!important;color-scheme:light!important;}
+body{background:var(--page-bg)!important;}
+.site-header,.admin-sidebar,.admin-card,.modal,.product-card,.card,.admin-shell,.overlay .modal{background-color:#fff!important;color:#242019;}
+.site-header{background:rgba(255,255,255,.97)!important;}
+.admin-sidebar{background:linear-gradient(180deg,#fffefa,#f3efe5)!important;}
+.admin-shell{background:#fbfaf6!important;}
+.admin-card,.modal{border-color:rgba(145,107,45,.18)!important;}
+.field input,.field textarea,.field select{background:#fff!important;color:#242019!important;border-color:#e5dfd2!important;}
+.theme-toggle,.admin-theme-btn{display:none!important;}
+
+/* ---------- Compact Usman AI helper (offline, no API/backend) ---------- */
+.usman-ai-launch{position:fixed;right:18px;bottom:91px;z-index:46;width:48px;height:48px;border:2px solid transparent;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(#fff,#fff) padding-box,conic-gradient(#ff4b9b,#ffbd4a,#53e6a4,#42caff,#9a69ff,#ff4b9b) border-box;box-shadow:0 0 10px #54d9ff88,0 0 20px #a45dff55;color:#272044;font-size:21px;}
+.usman-ai-launch::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1px solid #9b5cff88;animation:usmanAiPulse 2.2s infinite;pointer-events:none}
+@keyframes usmanAiPulse{0%{transform:scale(.9);opacity:.8}100%{transform:scale(1.35);opacity:0}}
+.usman-ai-panel{position:fixed;right:16px;bottom:150px;z-index:47;width:min(340px,calc(100vw - 28px));height:min(440px,calc(100dvh - 190px));min-height:300px;background:#fff;color:#211b35;border:1px solid #ded8f0;border-radius:20px;box-shadow:0 12px 45px #17102c35;display:none;overflow:hidden;}
+.usman-ai-panel.open{display:flex;flex-direction:column}
+.usman-ai-head{padding:13px 14px;background:linear-gradient(110deg,#f5f0ff,#eefaff);border-bottom:1px solid #e7e1f3;display:flex;align-items:center;gap:10px}
+.usman-ai-avatar{width:34px;height:34px;flex:0 0 34px;border-radius:50%;display:grid;place-items:center;color:white;background:linear-gradient(135deg,#526bff,#a44cff);box-shadow:0 0 12px #8d62ff77}
+.usman-ai-head strong{font-size:13px}.usman-ai-head small{display:block;color:#77708c;font-size:10px;margin-top:2px}.usman-ai-close{margin-left:auto;border:0;background:transparent;font-size:21px;color:#5a526d;padding:4px 7px}
+.usman-ai-messages{padding:12px;overflow:auto;display:flex;flex-direction:column;gap:9px;flex:1;background:#fff}
+.usman-ai-msg{max-width:88%;padding:9px 11px;border-radius:13px;font-size:12px;line-height:1.45;overflow-wrap:anywhere;white-space:pre-wrap}
+.usman-ai-msg.bot{align-self:flex-start;background:#f1eff8;color:#2a2440;border-bottom-left-radius:4px}.usman-ai-msg.user{align-self:flex-end;background:#e9eaff;color:#25244b;border-bottom-right-radius:4px}
+.usman-ai-msg a{color:#5548d9;text-decoration:underline;font-weight:700}
+.usman-ai-quick{padding:7px 10px;display:flex;gap:6px;overflow-x:auto;border-top:1px solid #eeeaf5;background:#fff}
+.usman-ai-quick button{white-space:nowrap;border:1px solid #ded8f0;border-radius:99px;background:#fff;color:#554b73;padding:6px 9px;font-size:10px}
+.usman-ai-form{display:flex;gap:7px;padding:9px 10px;border-top:1px solid #eeeaf5;background:#fff}
+.usman-ai-form input{min-width:0;flex:1;border:1px solid #ded8f0;border-radius:12px;padding:10px;font:inherit;font-size:12px;color:#211b35;outline:none}
+.usman-ai-form button{width:39px;border:0;border-radius:12px;color:#fff;background:linear-gradient(135deg,#526bff,#a44cff);font-size:17px}
+.usman-ai-note{text-align:center;font-size:9px;color:#8c859e;padding:0 8px 7px;background:#fff}
+@media(max-width:480px){.usman-ai-panel{right:10px;bottom:145px;width:calc(100vw - 20px);height:min(420px,calc(100dvh - 175px))}.usman-ai-launch{right:16px;bottom:88px}}
+
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="site-header">
+  <div class="logo-mark" id="logoMark"><span id="logoLetter">U</span><img id="logoImg" class="hidden" alt="logo" decoding="async"></div>
+  <div class="search-wrap">
+    <input id="searchInput" type="text" placeholder="" autocomplete="off">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+  </div>
+  <button class="icon-btn wishlist-btn" id="wishlistBtn" title="Wishlist">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-10.1-9.1C.4 8.8 1.8 5 5.4 4.2c2.1-.5 4 .4 5 2 1-1.6 2.9-2.5 5-2 3.6.8 5 4.6 3.5 7.7C19.5 16.4 12 21 12 21z"/></svg>
+    <span class="wishlist-count" id="wishlistCount">0</span>
+  </button>
+  <button class="icon-btn theme-toggle" id="themeToggle" title="Switch to light theme" aria-label="Switch to light theme" type="button">
+    <svg id="themeIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+  </button>
+</header>
+
+<!-- ============ BANNER CAROUSEL ============ -->
+<div class="banner-wrap hidden" id="bannerWrap">
+  <div class="banner-inner">
+    <div class="banner-track" id="bannerTrack"></div>
+    <div class="banner-dots" id="bannerDots"></div>
+  </div>
+</div>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="eyebrow">✦ WELCOME TO <span id="heroStoreNameSmall">AHMAD STORE</span> ✦</div>
+  <h1 id="heroTitle">USMAN STORE</h1>
+  <p id="heroDesc">Discover premium digital products, games, and exclusive content curated for true gamers.</p>
+  <div class="stats">
+    <div class="stat"><div class="stat-icon">🛒</div><div class="num" id="statProducts">0</div><div class="lbl">Products</div></div>
+    <div class="stat"><div class="stat-icon">🏷️</div><div class="num" id="statCategories">0</div><div class="lbl">Categories</div></div>
+    <div class="stat"><div class="stat-icon">🎧</div><div class="num">24/7</div><div class="lbl">Support</div></div>
+  </div>
+</section>
+
+<!-- ============ CATEGORIES ============ -->
+<div class="section-label"><span>Browse Categories</span>
+  <button class="gear-btn" id="hiddenGear" title="Filters">⚙</button>
+</div>
+<div class="scroll-row" id="categoryRow"></div>
+
+<!-- ============ SORT/FILTER ============ -->
+<div class="scroll-row" id="sortRow" style="margin-top:4px;">
+  <button class="pill sort active" data-sort="newest">🕐 Newest</button>
+  <button class="pill sort" data-sort="lowhigh">Price: Low to High</button>
+  <button class="pill sort" data-sort="highlow">Price: High to Low</button>
+</div>
+<div style="display:flex;align-items:center;gap:10px;margin:10px 0 14px;flex-wrap:wrap;">
+  <label for="maxPriceFilter" style="font-size:12px;font-weight:700;color:var(--muted);">BUDGET FILTER</label>
+  <input id="maxPriceFilter" type="number" min="0" step="1" inputmode="numeric" placeholder="Max budget (PKR)" aria-label="Maximum budget in Pakistani rupees" style="width:190px;max-width:65%;padding:10px 12px;border:1px solid var(--panel-border);border-radius:12px;background:var(--panel);color:var(--text);font:inherit;font-size:13px;">
+  <button id="clearBudgetFilter" type="button" class="pill">Clear</button>
+</div>
+
+<!-- ============ RECENTLY VIEWED ============ -->
+<section id="recentlyViewedWrap" class="recent-wrap hidden" aria-label="Recently viewed products">
+  <div class="section-label"><span>Recently Viewed</span><button class="recent-clear" id="clearRecentBtn" type="button">Clear</button></div>
+  <div class="recent-row" id="recentlyViewedRow"></div>
+</section>
+
+<!-- ============ PRODUCTS ============ -->
+<div class="product-grid" id="productGrid">
+  <div class="empty-state" id="loadingState">
+    <div class="center-spinner"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- ============ FLOATING BUTTONS ============ -->
+<button class="fab fab-top" id="backTopBtn" title="Back to top">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+<a class="fab fab-whatsapp" id="floatingWhatsapp" href="#" target="_blank" title="Chat on WhatsApp">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.6 1.4 5.1L2 22l5.1-1.3C8.5 21.5 10.2 22 12 22c5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3 .8.8-2.9-.2-.3C4.4 15 4 13.5 4 12c0-4.4 3.6-8 8-8s8 3.6 8 8-3.6 8-8 8zm4.4-5.9c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.2-.4.1-.1 0-.3 0-.4-.1-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 1.9 0 1.1.8 2.2.9 2.3.1.2 1.6 2.5 4 3.4.6.2 1 .4 1.3.5.6.2 1.1.1 1.5.1.5-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1-.1-.1-.2-.1-.4-.2z"/></svg>
+</a>
+
+<!-- Compact side AI helper: local product search, no external AI/API -->
+<button class="usman-ai-launch" id="usmanAiLaunch" type="button" aria-label="Ask Usman Store Assistant" title="Ask Usman Store Assistant">✦</button>
+<section class="usman-ai-panel" id="usmanAiPanel" aria-label="Usman Store Assistant" aria-hidden="true">
+  <div class="usman-ai-head"><div class="usman-ai-avatar">✦</div><div><strong>Usman Store Assistant</strong><small>Product finder · instant replies</small></div><button class="usman-ai-close" id="usmanAiClose" type="button" aria-label="Close">×</button></div>
+  <div class="usman-ai-messages" id="usmanAiMessages" aria-live="polite"><div class="usman-ai-msg bot">Assalam-o-alaikum! 👋 Usman Store mein kya dhoond rahe hain? Product ka naam likhein, main available items check karta hoon.</div></div>
+  <div class="usman-ai-quick"><button type="button" data-ai-quick="Available products dikhao">Products</button><button type="button" data-ai-quick="Download kaise karun?">Download help</button><button type="button" data-ai-quick="Payment kaise karun?">Payment</button></div>
+  <form class="usman-ai-form" id="usmanAiForm"><input id="usmanAiInput" type="text" maxlength="180" placeholder="Ask about a product..." autocomplete="off"><button type="submit" aria-label="Send">➤</button></form>
+  <div class="usman-ai-note">Automated store helper · no live AI service connected</div>
+</section>
+
+<!-- ============ SOCIAL FOOTER ============ -->
+<footer class="footer">
+  <div class="footer-title">CONNECT WITH US</div>
+  <div class="footer-subtitle">Stay connected with Usman Store</div>
+  <div class="social-row" id="socialRow"></div>
+  <nav class="legal-links" aria-label="Store policies">
+    <a href="#privacy-policy">Privacy Policy</a><span>·</span>
+    <a href="#terms-conditions">Terms &amp; Conditions</a><span>·</span>
+    <a href="#refund-policy">Refund Policy</a><span>·</span>
+    <a href="#contact-support">Contact &amp; Support</a><span>·</span>
+    <a id="footerSupportEmailLink" href="mailto:ua760436@gmail.com">Email Support</a>
+  </nav>
+  <div class="legal-content">
+    <details id="privacy-policy"><summary>Privacy Policy</summary><div><p>Usman Store may process information you choose to provide, such as account details, product reviews, ratings, and messages sent for support. The store uses Firebase services for sign-in and store data, and Cloudinary for product images. These service providers process data under their own terms and privacy policies.</p><p>Please do not post passwords, payment card details, or other sensitive information in reviews or messages. Information is used to operate the store, display submitted reviews, provide downloads or application instructions, and respond to support requests. Contact the store if you want to ask about your submitted information.</p><p>This policy should be reviewed and updated if the store's data practices or service providers change.</p></div></details>
+    <details id="terms-conditions"><summary>Terms &amp; Conditions</summary><div><p>By using Usman Store, you agree to use the site lawfully and provide accurate information when contacting the store or submitting a review.</p><p>Product descriptions, prices, availability, download links, and application instructions are provided on each product listing and may change. Check the listing carefully before placing an order or applying. You are responsible for meeting any third-party website or service requirements linked from a product.</p><p>Do not misuse the website, interfere with its operation, upload unlawful content, or submit misleading reviews. Product names and third-party trademarks belong to their respective owners.</p></div></details>
+    <details id="refund-policy"><summary>Refund Policy</summary><div><p>For paid products, contact Usman Store support as soon as possible if an order is incorrect, a payment issue occurs, or the supplied item does not work as described. Include your order details, but never share passwords or full card information.</p><p>Digital products may not be refundable after a valid download or delivery, except where required by applicable law or where the store confirms an error. Any refund or replacement request will be reviewed individually. Confirm product details before paying.</p></div></details>
+    <details id="contact-support"><summary>Contact &amp; Support</summary><div><p>For order help, download issues, or questions about applying, email us at <a id="supportEmailInline" href="mailto:ua760436@gmail.com">ua760436@gmail.com</a>. Include the product name and a short description of the issue.</p><p>Support response times may vary. Never send your account password or one-time verification code.</p></div></details>
+  </div>
+  <div class="footer-copy">© <span id="yearNow"></span> <span id="footerStoreName">Usman Store</span>. All rights reserved.</div>
+</footer>
+
+<!-- ============ TOASTS ============ -->
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- ============ LIGHTBOX (full image view) ============ -->
+<div class="lightbox-overlay" id="lightboxOverlay">
+  <button class="lightbox-close" id="lightboxClose">✕</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<!-- ============ PRODUCT DETAIL / DESCRIPTION MODAL ============ -->
+<div class="overlay" id="productOverlay">
+  <div class="modal">
+    <div class="modal-head"><h3 id="pdTitle">Product</h3><button class="modal-close" data-close="productOverlay">✕</button></div>
+    <div class="pd-gallery" id="pdGallery"></div>
+    <div class="pd-dots" id="pdDots"></div>
+    <div style="margin-top:14px;" id="pdPriceWrap">
+      <span class="price-strike hidden" id="pdOldPrice"></span>
+      <span style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:800;" id="pdPrice"></span>
+    </div>
+    <div style="margin-top:10px;color:var(--muted);font-size:13.5px;line-height:1.6" id="pdDesc"></div>
+    <div id="pdApplyWrap" class="hidden" style="margin-top:14px;padding:14px;border:1px solid var(--panel-border);border-radius:14px;background:var(--panel);"><strong style="display:block;margin-bottom:7px;">How to Apply</strong><div id="pdApplyInstructions" style="white-space:pre-wrap;color:var(--text);font-size:13.5px;line-height:1.65;"></div></div>
+
+    <div class="coupon-row" id="pdCouponRow">
+      <input id="pdCouponInput" type="text" placeholder="Have a coupon code?" style="text-transform:uppercase">
+      <button id="pdCouponApply">Apply</button>
+    </div>
+    <div class="error-text hidden" id="pdCouponMsg" style="text-align:left;"></div>
+
+    <div id="pdRelatedWrap" class="hidden">
+      <div style="font-size:12px;color:var(--muted);margin:16px 0 6px;text-transform:uppercase;letter-spacing:1px;">You may also like</div>
+      <div class="related-row" id="pdRelated"></div>
+    </div>
+
+    <div style="margin-top:16px;">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Rate this product</div>
+      <div class="star-input" id="pdStars">
+        <button data-v="1" aria-label="1 star">★</button><button data-v="2" aria-label="2 stars">★</button><button data-v="3" aria-label="3 stars">★</button><button data-v="4" aria-label="4 stars">★</button><button data-v="5" aria-label="5 stars">★</button>
+      </div>
+      <div style="margin-top:10px;">
+        <textarea id="pdReviewText" rows="3" maxlength="500" placeholder="Write your honest review (optional)..." style="width:100%;resize:vertical;padding:12px;border:1px solid var(--panel-border);border-radius:12px;background:var(--panel);color:var(--text);font:inherit;"></textarea>
+        <button class="btn btn-primary" id="pdReviewSubmit" style="margin-top:8px;width:100%;">Submit Rating & Review</button>
+      </div>
+      <div id="pdReviewsList" style="margin-top:14px;"></div>
+    </div>
+    <div id="pdDownloadProgress" class="hidden" style="margin-top:14px;padding:14px;border:1px solid var(--panel-border);border-radius:14px;background:var(--panel);text-align:center;">
+      <div style="font-weight:700;margin-bottom:6px;">Your download is getting ready</div>
+      <div style="font-size:14px;color:var(--muted);">Downloading in <strong id="pdDownloadCount" style="font-size:24px;color:var(--text);">10</strong> seconds</div>
+      <a id="pdDownloadReady" class="btn btn-download hidden" href="#" target="_blank" rel="noopener" style="display:block;margin-top:12px;text-decoration:none;"><span>DOWNLOAD</span><svg class="download-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 18v3h16v-3"/></svg></a>
+    </div>
+    <div class="card-actions" style="margin-top:16px;">
+      <button class="btn btn-whatsapp" id="pdWhatsapp">Order on WhatsApp</button>
+      <button class="btn btn-download hidden" id="pdDownload" title="Download"><span>DOWNLOAD</span><svg class="download-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 18v3h16v-3"/></svg></button>
+      <button class="btn btn-share" id="pdShare" title="Share">↗</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ADMIN LOGIN MODAL ============ -->
+<div class="overlay" id="adminLoginOverlay">
+  <div class="modal">
+    <div class="modal-head"><h3>Admin Login</h3><button class="modal-close" data-close="adminLoginOverlay">✕</button></div>
+    <div class="field"><label>Email</label><input id="adminEmail" type="email" placeholder="admin@ahmadstore.com" autocomplete="username"></div>
+    <div class="field"><label>Password</label><input id="adminPassword" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+    <button class="btn-primary" id="adminLoginBtn">Login</button>
+    <button class="btn-secondary" data-close="adminLoginOverlay">Cancel</button>
+    <div class="error-text hidden" id="adminLoginError"></div>
+  </div>
+</div>
+
+<!-- ============ CONFIRM MODAL ============ -->
+<div class="overlay" id="confirmOverlay">
+  <div class="modal">
+    <div class="modal-head"><h3 id="confirmTitle">Are you sure?</h3><button class="modal-close" data-close="confirmOverlay">✕</button></div>
+    <p style="color:var(--muted);font-size:13.5px;" id="confirmMsg">This action cannot be undone.</p>
+    <button class="btn-primary btn-danger" id="confirmYesBtn">Delete</button>
+    <button class="btn-secondary" data-close="confirmOverlay">Cancel</button>
+  </div>
+</div>
+
+<!-- ============ PRODUCT FORM MODAL ============ -->
+<div class="overlay" id="productFormOverlay">
+  <div class="modal">
+    <div class="modal-head"><h3 id="productFormTitle">Add Product</h3><button class="modal-close" data-close="productFormOverlay">✕</button></div>
+    <div class="field"><label>Product Title *</label><input id="pfTitle" type="text" placeholder="e.g. Premium Stadium Jersey"></div>
+    <div class="field"><label>Category *</label><select id="pfCategory"></select></div>
+    <div class="field" id="pfPriceWrap"><label>Price (PKR) *</label><input id="pfPrice" type="number" min="0" step="1" placeholder="e.g. 1500"></div>
+    <div class="field"><label>Delivery Method *</label><select id="pfDeliveryType"><option value="whatsapp">Selling — Order via WhatsApp</option><option value="download">Gifting — Direct Download Link</option><option value="apply">Apply — Instructions Only</option></select><small style="display:block;color:var(--muted);margin-top:6px;">Choose one method. Customers will only see the matching button.</small></div>
+    <div class="field" id="pfWhatsappWrap"><label>WhatsApp Number *</label><input id="pfWhatsapp" type="tel" inputmode="numeric" placeholder="e.g. 923001234567 (with country code)"></div>
+    <div class="field"><label>Description (optional)</label><textarea id="pfDescription" placeholder="Tell customers more about this product"></textarea></div>
+    <div class="field hidden" id="pfDownloadWrap"><label>Download Link *</label><input id="pfDownload" type="url" placeholder="https://..."></div>
+    <div class="field hidden" id="pfApplyWrap"><label>Apply Instructions *</label><textarea id="pfApplyInstructions" rows="4" placeholder="Explain where and how customers should apply for this product..."></textarea><small style="display:block;color:var(--muted);margin-top:6px;">These instructions will be shown to customers and Usman AI.</small></div>
+    <div class="field">
+      <label>Product Images * (max 3, first image is the cover)</label>
+      <input id="pfImageFile" type="file" accept="image/*" multiple>
+      <div class="upload-progress hidden" id="pfUploadProgressWrap"><div class="upload-progress-bar" id="pfUploadProgressBar"></div></div>
+      <div id="pfGalleryWrap" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;"></div>
+    </div>
+    <button class="btn-primary" id="pfSaveBtn">Save Product</button>
+    <button class="btn-secondary" data-close="productFormOverlay">Cancel</button>
+    <div class="error-text hidden" id="pfError"></div>
+  </div>
+</div>
+
+<!-- ============ CATEGORY FORM MODAL ============ -->
+<div class="overlay" id="categoryFormOverlay">
+  <div class="modal">
+    <div class="modal-head"><h3 id="categoryFormTitle">Add Category</h3><button class="modal-close" data-close="categoryFormOverlay">✕</button></div>
+    <div class="field"><label>Category Name *</label><input id="cfName" type="text" placeholder="e.g. Jersey"></div>
+    <button class="btn-primary" id="cfSaveBtn">Save Category</button>
+    <button class="btn-secondary" data-close="categoryFormOverlay">Cancel</button>
+    <div class="error-text hidden" id="cfError"></div>
+  </div>
+</div>
+
+<!-- ============ BANNER FORM MODAL ============ -->
+<div class="overlay" id="bannerFormOverlay">
+  <div class="modal">
+    <div class="modal-head"><h3 id="bannerFormTitle">Add Banner</h3><button class="modal-close" data-close="bannerFormOverlay">✕</button></div>
+    <div class="field">
+      <label>Banner Image * (recommended 16:7 wide)</label>
+      <input id="bfImageFile" type="file" accept="image/*">
+      <div class="upload-progress hidden" id="bfUploadProgressWrap"><div class="upload-progress-bar" id="bfUploadProgressBar"></div></div>
+      <img id="bfImagePreview" class="img-preview hidden" style="aspect-ratio:16/7;" alt="">
+    </div>
+    <div class="field"><label>Link (optional — opens when tapped)</label><input id="bfLink" type="text" placeholder="https://..."></div>
+    <button class="btn-primary" id="bfSaveBtn">Save Banner</button>
+    <button class="btn-secondary" data-close="bannerFormOverlay">Cancel</button>
+    <div class="error-text hidden" id="bfError"></div>
+  </div>
+</div>
+
+<!-- ============ COUPON FORM MODAL ============ -->
+<div class="overlay" id="couponFormOverlay">
+  <div class="modal">
+    <div class="modal-head"><h3 id="couponFormTitle">Add Coupon</h3><button class="modal-close" data-close="couponFormOverlay">✕</button></div>
+    <div class="field"><label>Coupon Code *</label><input id="cpCode" type="text" placeholder="e.g. AHMAD10" style="text-transform:uppercase"></div>
+    <div class="field"><label>Discount % *</label><input id="cpPercent" type="number" min="1" max="100" placeholder="10"></div>
+    <div class="field"><label style="display:flex;align-items:center;gap:8px;"><input id="cpActive" type="checkbox" style="width:auto" checked> Active</label></div>
+    <button class="btn-primary" id="cpSaveBtn">Save Coupon</button>
+    <button class="btn-secondary" data-close="couponFormOverlay">Cancel</button>
+    <div class="error-text hidden" id="cpError"></div>
+  </div>
+</div>
+
+<!-- ============ SETTINGS/SOCIAL/SECURITY FORM (generic single-field) ============ -->
+<div class="overlay" id="genericFormOverlay">
+  <div class="modal">
+    <div class="modal-head"><h3 id="gfTitle">Edit</h3><button class="modal-close" data-close="genericFormOverlay">✕</button></div>
+    <div id="gfFieldsWrap"></div>
+    <button class="btn-primary" id="gfSaveBtn">Save</button>
+    <button class="btn-secondary" data-close="genericFormOverlay">Cancel</button>
+    <div class="error-text hidden" id="gfError"></div>
+  </div>
+</div>
+
+<!-- ============ ADMIN DASHBOARD SHELL ============ -->
+<div class="admin-shell" id="adminShell">
+  <aside class="admin-sidebar" id="adminSidebar">
+    <h4>USMAN STORE ADMIN</h4>
+    <button class="admin-nav-item active" data-panel="dashboard">📊 Dashboard</button>
+    <button class="admin-nav-item" data-panel="products">🛒 Products</button>
+    <button class="admin-nav-item" data-panel="categories">🏷️ Categories</button>
+    <button class="admin-nav-item" data-panel="coupons">🎟️ Coupons</button>
+    <button class="admin-nav-item" data-panel="banners">🖼️ Banners</button>
+    <button class="admin-nav-item" data-panel="whatsapp">💬 WhatsApp Settings</button>
+    <button class="admin-nav-item" data-panel="social">🔗 Social Links</button>
+    <button class="admin-nav-item" data-panel="store">🏬 Store Settings</button>
+    <button class="admin-nav-item" data-panel="security">🔒 Security</button>
+    <button class="admin-nav-item logout" id="adminLogoutBtn">🚪 Logout</button>
+  </aside>
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <button class="admin-menu-btn" id="adminMenuBtn">☰</button>
+      <div class="admin-title" id="adminPanelTitle">Dashboard</div>
+      <button class="icon-btn theme-toggle admin-theme-btn" id="adminThemeToggle" title="Switch to light theme" aria-label="Switch to light theme" type="button">
+        <svg id="adminThemeIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+      </button>
+    </div>
+
+    <div class="admin-panel active" id="panel-dashboard">
+      <div class="stat-grid">
+        <div class="mini-stat glass"><div class="n" id="dashProducts">0</div><div class="l">Products</div></div>
+        <div class="mini-stat glass"><div class="n" id="dashCategories">0</div><div class="l">Categories</div></div>
+        <div class="mini-stat glass"><div class="n" id="dashRatings">0</div><div class="l">Ratings</div></div>
+        <div class="mini-stat glass"><div class="n" id="dashWishlist">0</div><div class="l">Wishlist adds</div></div>
+        <div class="mini-stat glass"><div class="n" id="dashBanners">0</div><div class="l">Banners (max 3)</div></div>
+      </div>
+      <div class="admin-card glass">
+        <div style="font-weight:700;margin-bottom:10px;">Recently Added Products</div>
+        <div id="dashRecent"></div>
+      </div>
+    </div>
+
+    <div class="admin-panel" id="panel-products">
+      <div class="admin-card glass" id="productsListWrap"></div>
+    </div>
+
+    <div class="admin-panel" id="panel-categories">
+      <div class="admin-card glass" id="categoriesListWrap"></div>
+    </div>
+
+    <div class="admin-panel" id="panel-coupons">
+      <div class="admin-card glass" id="couponsListWrap"></div>
+    </div>
+
+    <div class="admin-panel" id="panel-banners">
+      <div class="admin-card glass" id="bannersListWrap"></div>
+    </div>
+
+    <div class="admin-panel" id="panel-whatsapp">
+      <div class="admin-card glass">
+        <div class="admin-row">
+          <div class="admin-row-info">
+            <div class="admin-row-title">Default WhatsApp Number</div>
+            <div class="admin-row-sub" id="defaultWhatsappDisplay">Not set</div>
+          </div>
+          <div class="admin-row-actions"><button class="icon-sm-btn" data-generic="defaultWhatsapp">✎</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-panel" id="panel-social">
+      <div class="admin-card glass" id="socialListWrap"></div>
+    </div>
+
+    <div class="admin-panel" id="panel-store">
+      <div class="admin-card glass">
+        <div class="admin-row">
+          <div class="admin-row-info"><div class="admin-row-title">Store Logo</div><div class="admin-row-sub">Shown top-left of header (square image recommended)</div></div>
+          <div class="admin-row-actions"><img id="logoPreviewAdmin" class="hidden" style="width:34px;height:34px;border-radius:8px;object-fit:cover;"><button class="icon-sm-btn" id="logoUploadBtn">✎</button></div>
+        </div>
+        <input id="logoFileInput" type="file" accept="image/*" class="hidden">
+        <div class="admin-row">
+          <div class="admin-row-info"><div class="admin-row-title">Store Name</div><div class="admin-row-sub" id="storeNameDisplay">Usman Store</div></div>
+          <div class="admin-row-actions"><button class="icon-sm-btn" data-generic="storeName">✎</button></div>
+        </div>
+        <div class="admin-row">
+          <div class="admin-row-info"><div class="admin-row-title">Hero Title</div><div class="admin-row-sub" id="heroTitleDisplay">USMAN STORE</div></div>
+          <div class="admin-row-actions"><button class="icon-sm-btn" data-generic="heroTitle">✎</button></div>
+        </div>
+        <div class="admin-row">
+          <div class="admin-row-info"><div class="admin-row-title">Hero Description</div><div class="admin-row-sub" id="heroDescDisplay">Discover premium digital products...</div></div>
+          <div class="admin-row-actions"><button class="icon-sm-btn" data-generic="heroDesc">✎</button></div>
+        </div>
+        <div class="admin-row">
+          <div class="admin-row-info"><div class="admin-row-title">Support Email</div><div class="admin-row-sub" id="supportEmailDisplay">ua760436@gmail.com</div></div>
+          <div class="admin-row-actions"><button class="icon-sm-btn" data-generic="supportEmail">✎</button></div>
+        </div>
+        <div class="admin-row">
+          <div class="admin-row-info"><div class="admin-row-title">Payment Methods</div><div class="admin-row-sub" id="paymentMethodsDisplay">JazzCash, EasyPaisa</div></div>
+          <div class="admin-row-actions"><button class="icon-sm-btn" data-generic="paymentMethods">✎</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-panel" id="panel-security">
+      <div class="admin-card glass">
+        <div class="admin-row">
+          <div class="admin-row-info">
+            <div class="admin-row-title">Admin Secret Search Code</div>
+            <div class="admin-row-sub">Type this in the public search bar to open Admin Login.</div>
+          </div>
+          <div class="admin-row-actions"><button class="icon-sm-btn" data-generic="secretCode">✎</button></div>
+        </div>
+        <div class="admin-row">
+          <div class="admin-row-info">
+            <div class="admin-row-title">Admin Account</div>
+            <div class="admin-row-sub">Managed via Firebase Authentication (email/password). Change your password from the Firebase Console or by resetting via email.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script>
+/* ==========================================================================
+   USMAN STORE — app.js (inlined)
+   ========================================================================== */
+(function(){
+"use strict";
+
+/* ---------------------------------------------------------------
+   1. FIREBASE CONFIG — REPLACE WITH YOUR OWN PROJECT CONFIG
+   Get this from: Firebase Console → Project Settings → General → Your apps
+--------------------------------------------------------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyAxwucCkr-SxHEdoRc8wybkSTIuFLr-nW0",
+  authDomain: "usman-store-best.firebaseapp.com",
+  projectId: "usman-store-best",
+  storageBucket: "usman-store-best.firebasestorage.app",
+  messagingSenderId: "363701172832",
+  appId: "1:363701172832:web:f8a77ab1db772afd81e105",
+  measurementId: "G-WENN71ZE9Y"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+// Cache Firestore data for faster repeat visits/offline reads where the browser supports it.
+if (db && typeof db.enablePersistence === "function") {
+  db.enablePersistence({ synchronizeTabs: true }).catch(()=>{});
+}
+
+/* Cloudinary config (as provided) */
+const CLOUDINARY_CLOUD_NAME = "dksqwmjyb";
+const CLOUDINARY_UPLOAD_PRESET = "amazing_store";
+
+/* ---------------------------------------------------------------
+   2. STATE
+--------------------------------------------------------------- */
+let products = [];
+let categories = [];
+let settings = { storeName:"Usman Store", heroTitle:"USMAN STORE", heroDesc:"Discover premium digital products, games, and exclusive content curated for true gamers.", secretCode:"usman2233", defaultWhatsapp:"", paymentMethods:"JazzCash, EasyPaisa" };
+let socialLinks = {}; // { whatsapp, youtube, tiktok, instagram, facebook, telegram, x, discord }
+let ratingsAgg = {}; // productId -> {sum,count}
+let scheduleRatingsRender = null;
+
+let activeCategory = "all";
+let activeSort = "newest";
+let searchQuery = "";
+let isAdmin = false;
+let editingProductId = null;
+let editingCategoryId = null;
+let currentPdProduct = null;
+let confirmCallback = null;
+let genericSaveCallback = null;
+let coupons = [];
+let editingCouponId = null;
+let appliedCoupon = null; // {code, percent} for the product currently open in detail modal
+let pdGalleryImages = [];
+let pdGalleryTimer = null;
+let banners = [];
+let editingBannerId = null;
+let pendingBannerImageUrl = null;
+let bannerAutoTimer = null;
+
+const wishlist = new Set(JSON.parse(localStorage.getItem("ahmad_wishlist") || "[]"));
+const myRatings = JSON.parse(localStorage.getItem("ahmad_myratings") || "{}"); // productId -> stars I gave
+let recentlyViewedIds = [];
+try { recentlyViewedIds = JSON.parse(localStorage.getItem("usman_recently_viewed") || "[]"); } catch(_) { recentlyViewedIds = []; }
+if(!Array.isArray(recentlyViewedIds)) recentlyViewedIds = [];
+
+/* ---------------------------------------------------------------
+   3. UTIL
+--------------------------------------------------------------- */
+function $(id){ return document.getElementById(id); }
+function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
+scheduleRatingsRender = debounce(()=>{ renderProducts(); if(isAdmin) renderDashboard(); }, 140);
+function escapeHtml(str){
+  return String(str||"").replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+}
+function fmtPrice(p){ const n = Number(p)||0; return "Rs. " + Math.round(n).toLocaleString("en-PK"); }
+function cldUrl(url, width){
+  if(!url || !url.includes("/upload/")) return url;
+  return url.replace("/upload/", `/upload/q_auto,f_auto,w_${width}/`);
+}
+function toast(msg, type){
+  type = type || "info";
+  const el = document.createElement("div");
+  el.className = "toast " + type;
+  el.textContent = msg;
+  $("toastStack").appendChild(el);
+  setTimeout(()=>{ el.style.opacity="0"; el.style.transition="opacity .3s"; setTimeout(()=>el.remove(),300); }, 2800);
+}
+function openOverlay(id){ $(id).classList.add("show"); document.body.style.overflow="hidden"; }
+function closeOverlay(id){ $(id).classList.remove("show"); document.body.style.overflow=""; }
+document.querySelectorAll("[data-close]").forEach(btn=>{
+  btn.addEventListener("click", ()=>closeOverlay(btn.getAttribute("data-close")));
+});
+document.querySelectorAll(".overlay").forEach(ov=>{
+  ov.addEventListener("click", e=>{ if(e.target===ov) closeOverlay(ov.id); });
+});
+
+/* ---------------------------------------------------------------
+   4. THEME
+--------------------------------------------------------------- */
+function applyTheme(){
+  // Usman Store now uses the white theme only.
+  document.documentElement.setAttribute("data-theme", "light");
+  document.documentElement.style.colorScheme = "light";
+  try{ localStorage.setItem("ahmad_theme", "light"); }catch(e){}
+}
+applyTheme();
+// Theme switching is intentionally disabled: the store stays in its white theme.
+
+/* ---------------------------------------------------------------
+   5. FIRESTORE LISTENERS (real-time, minimal reads)
+--------------------------------------------------------------- */
+function listenCollections(){
+  db.collection("categories").onSnapshot(snap=>{
+    categories = snap.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b)=>(a.order??0)-(b.order??0));
+    renderCategoryRow();
+    renderProductCategorySelect();
+    updateStats();
+    if(isAdmin){ renderAdminCategories(); renderDashboard(); renderProductCategorySelect(); }
+  }, err=>{ console.error(err); toast("Could not load categories","error"); });
+
+  db.collection("products").onSnapshot(snap=>{
+    products = snap.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b)=>((b.createdAt&&b.createdAt.seconds)||0)-((a.createdAt&&a.createdAt.seconds)||0));
+    $("loadingState") && $("loadingState").remove();
+    renderProducts();
+    renderRecentlyViewed();
+    updateStats();
+    if(isAdmin){ renderAdminProducts(); renderDashboard(); }
+  }, err=>{ console.error(err); toast("Could not load products","error"); });
+
+  db.collection("settings").doc("store").onSnapshot(snap=>{
+    if(snap.exists) settings = Object.assign(settings, snap.data());
+    applySettingsToDom();
+    if(isAdmin) renderStoreSettingsPanel();
+  }, err=>console.error(err));
+
+  db.collection("socialLinks").doc("main").onSnapshot(snap=>{
+    socialLinks = snap.exists ? snap.data() : {};
+    renderSocialFooter();
+    if(isAdmin) renderAdminSocial();
+  }, err=>console.error(err));
+
+  db.collection("ratings").onSnapshot(snap=>{
+    const agg = {};
+    snap.docs.forEach(d=>{
+      const r = d.data();
+      if(!r.productId) return;
+      agg[r.productId] = agg[r.productId] || {sum:0,count:0};
+      agg[r.productId].sum += Number(r.stars)||0;
+      agg[r.productId].count += 1;
+    });
+    ratingsAgg = agg;
+    if(currentPdProduct) renderProductReviews(currentPdProduct.id, snap.docs.map(d=>({id:d.id,...d.data()})));
+    scheduleRatingsRender();
+  }, err=>console.error(err));
+
+  db.collection("coupons").onSnapshot(snap=>{
+    coupons = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    if(isAdmin) renderAdminCoupons();
+  }, err=>console.error(err));
+
+  db.collection("banners").onSnapshot(snap=>{
+    banners = snap.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b)=>(a.order??0)-(b.order??0));
+    renderBanners();
+    if(isAdmin){ renderAdminBanners(); renderDashboard(); }
+  }, err=>console.error(err));
+}
+
+function applySettingsToDom(){
+  $("heroStoreNameSmall").textContent = (settings.storeName || "Usman Store").toUpperCase();
+  $("heroTitle").textContent = settings.heroTitle || "USMAN STORE";
+  $("heroDesc").textContent = settings.heroDesc || "";
+  $("footerStoreName").textContent = settings.storeName || "Usman Store";
+  document.title = (settings.storeName || "Usman Store") + " — " + (settings.heroTitle || "");
+  const wa = settings.defaultWhatsapp || "";
+  $("floatingWhatsapp").href = wa ? ("https://wa.me/" + wa.replace(/[^0-9]/g,"")) : "#";
+  $("floatingWhatsapp").style.display = wa ? "flex" : "none";
+  const pm = (settings.paymentMethods || "").trim();
+  $("paymentBadge").classList.toggle("hidden", !pm);
+  $("paymentMethodsText").textContent = pm.split(",").map(s=>s.trim()).filter(Boolean).join(" · ");
+  if(settings.logoUrl){
+    $("logoImg").src = cldUrl(settings.logoUrl, 120);
+    $("logoImg").classList.remove("hidden");
+    $("logoLetter").classList.add("hidden");
+  } else {
+    $("logoImg").classList.add("hidden");
+    $("logoLetter").classList.remove("hidden");
+  }
+}
+
+/* ---------------------------------------------------------------
+   6. CATEGORIES — public render
+--------------------------------------------------------------- */
+/* ---------------------------------------------------------------
+   6b. BANNER CAROUSEL (public)
+--------------------------------------------------------------- */
+function renderBanners(){
+  const wrap = $("bannerWrap");
+  const track = $("bannerTrack");
+  const dots = $("bannerDots");
+  if(bannerAutoTimer){ clearInterval(bannerAutoTimer); bannerAutoTimer = null; }
+  if(!banners.length){ wrap.classList.add("hidden"); track.innerHTML=""; dots.innerHTML=""; return; }
+  wrap.classList.remove("hidden");
+  track.innerHTML = banners.map(b=>{
+    const img = `<img loading="lazy" decoding="async" src="${escapeHtml(cldUrl(b.imageUrl,1000)||'')}" alt="banner">`;
+    return b.link ? `<a href="${escapeHtml(b.link)}" target="_blank" rel="noopener">${img}</a>` : `<div class="banner-slide">${img}</div>`;
+  }).join("");
+  dots.innerHTML = banners.length > 1 ? banners.map((_,i)=>`<span class="${i===0?'on':''}"></span>`).join("") : "";
+  track.onscroll = debounce(()=>{
+    const idx = Math.round(track.scrollLeft / track.clientWidth);
+    dots.querySelectorAll("span").forEach((d,i)=>d.classList.toggle("on", i===idx));
+  }, 60);
+  if(banners.length > 1){
+    bannerAutoTimer = setInterval(()=>{
+      const next = (Math.round(track.scrollLeft / track.clientWidth) + 1) % banners.length;
+      track.scrollTo({ left: next * track.clientWidth, behavior:"smooth" });
+    }, 3500);
+  }
+}
+
+function renderCategoryRow(){
+  const row = $("categoryRow");
+  let html = `<button class="pill ${activeCategory==='all'?'active':''}" data-cat="all">All Products</button>`;
+  categories.forEach(c=>{
+    html += `<button class="pill ${activeCategory===c.id?'active':''}" data-cat="${c.id}">${escapeHtml(c.name)}</button>`;
+  });
+  row.innerHTML = html;
+  row.querySelectorAll("[data-cat]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{ activeCategory = btn.getAttribute("data-cat"); renderCategoryRow(); renderProducts(); });
+  });
+}
+
+$("sortRow").querySelectorAll(".pill.sort").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    activeSort = btn.getAttribute("data-sort");
+    $("sortRow").querySelectorAll(".pill.sort").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    renderProducts();
+  });
+});
+
+/* ---------------------------------------------------------------
+   7. SEARCH (debounced, checks for hidden admin code)
+--------------------------------------------------------------- */
+const onSearchInput = debounce(function(){
+  const val = $("searchInput").value.trim();
+  if(val === "usman2233" || val === (settings.secretCode || "usman2233")){
+    $("searchInput").value = "";
+    searchQuery = "";
+    renderProducts();
+    openOverlay("adminLoginOverlay");
+    setTimeout(()=>$("adminEmail").focus(), 80);
+    return;
+  }
+  searchQuery = val.toLowerCase();
+  renderProducts();
+}, 180);
+$("searchInput").addEventListener("input", onSearchInput);
+const maxPriceFilterEl = $("maxPriceFilter");
+if(maxPriceFilterEl){
+  maxPriceFilterEl.addEventListener("input", renderProducts);
+  $("clearBudgetFilter").addEventListener("click", ()=>{ maxPriceFilterEl.value=""; renderProducts(); });
+}
+
+/* ---------------------------------------------------------------
+   8. PRODUCT GRID (public)
+--------------------------------------------------------------- */
+function getFilteredSortedProducts(){
+  let list = products.slice();
+  const maxBudget = Number($("maxPriceFilter")?.value || 0);
+  if(maxBudget > 0) list = list.filter(p => p.deliveryType === "download" || Number(p.price || 0) <= maxBudget);
+  if(activeCategory !== "all") list = list.filter(p=>p.categoryId === activeCategory);
+  if(searchQuery){
+    list = list.filter(p=>{
+      const cat = categories.find(c=>c.id===p.categoryId);
+      return (p.title||"").toLowerCase().includes(searchQuery) ||
+             (p.description||"").toLowerCase().includes(searchQuery) ||
+             (cat && cat.name.toLowerCase().includes(searchQuery));
+    });
+  }
+  if(activeSort === "lowhigh") list.sort((a,b)=>(a.price||0)-(b.price||0));
+  else if(activeSort === "highlow") list.sort((a,b)=>(b.price||0)-(a.price||0));
+  else list.sort((a,b)=>(b.createdAt&&b.createdAt.seconds||0)-(a.createdAt&&a.createdAt.seconds||0));
+  return list;
+}
+
+function ratingFor(id){
+  const r = ratingsAgg[id];
+  if(!r || !r.count) return {avg:0,count:0};
+  return {avg:(r.sum/r.count), count:r.count};
+}
+
+function renderProducts(){
+  const grid = $("productGrid");
+  const list = getFilteredSortedProducts();
+  if(!list.length){
+    grid.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <div>No products found. Try a different search or category.</div>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = list.map(p=>{
+    const rating = ratingFor(p.id);
+    const wished = wishlist.has(p.id);
+    const hasDesc = p.description && p.description.trim().length;
+    return `
+    <div class="card glass" data-id="${p.id}">
+      <div class="img-wrap" data-action="open" data-id="${p.id}">
+        <button class="zoom-btn" data-action="zoom" data-id="${p.id}" title="View full image">🔍</button>
+        <button class="wish-heart ${wished?'active':''}" data-action="wish" data-id="${p.id}">❤</button>
+        <img loading="lazy" decoding="async" src="${escapeHtml(cldUrl(productImages(p)[0],400)||'')}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><rect width=%22200%22 height=%22200%22 fill=%22%231a1330%22/></svg>'" alt="${escapeHtml(p.title)}">
+      </div>
+      <div class="card-body">
+        <div class="card-title" data-action="open" data-id="${p.id}">${escapeHtml(p.title)}</div>
+        <div class="card-price ${(p.deliveryType === "download" || p.deliveryType === "apply") ? "hidden" : ""}">${(p.deliveryType === "download" || p.deliveryType === "apply") ? "" : fmtPrice(p.price)}</div>
+        <div class="card-rating">${rating.count? ('★ '+rating.avg.toFixed(1)+' ('+rating.count+')') : 'No ratings yet'}</div>
+        ${hasDesc ? `<div class="card-desc" data-full="${escapeHtml(p.description)}"><span class="desc-short">${escapeHtml(p.description.slice(0,60))}${p.description.length>60?'…':''}</span></div>
+        ${p.description.length>60?`<button class="read-more-btn" data-action="readmore" data-id="${p.id}">Read More</button>`:''}` : ''}
+        <div class="card-actions">
+          ${p.deliveryType === "apply"
+            ? `<button class="btn btn-whatsapp" data-action="open" data-id="${p.id}">How to Apply</button>`
+            : (p.deliveryType === "download" || (!p.deliveryType && p.downloadLink && !p.whatsapp))
+              ? `<button class="btn btn-download" data-action="download" data-id="${p.id}"><span>DOWNLOAD</span><svg class="download-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 18v3h16v-3"/></svg></button>`
+              : `<button class="btn btn-whatsapp" data-action="order" data-id="${p.id}">Order via WhatsApp</button>`}
+          <button class="btn btn-share" data-action="share" data-id="${p.id}" title="Share">↗</button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+
+}
+
+// One delegated handler serves all product cards, including wishlist results.
+const productGridEl = $("productGrid");
+productGridEl.addEventListener("click", e=>{
+  const target = e.target.closest("[data-action]");
+  if(!target || !productGridEl.contains(target)) return;
+  const action = target.getAttribute("data-action");
+  const id = target.getAttribute("data-id");
+  if(action === "wish"){ e.stopPropagation(); toggleWishlist(id); }
+  else if(action === "zoom"){ e.stopPropagation(); const p=products.find(x=>x.id===id); if(p) openLightbox(productImages(p)[0]); }
+  else if(action === "open"){ openProductDetail(id); }
+  else if(action === "order"){ e.stopPropagation(); orderOnWhatsapp(id); }
+  else if(action === "download"){ e.stopPropagation(); const p=products.find(x=>x.id===id); if(p&&p.downloadLink){ openProductDetail(id); startDownloadCountdown(p.downloadLink); } }
+  else if(action === "share"){ e.stopPropagation(); shareProduct(id); }
+  else if(action === "readmore"){
+    e.stopPropagation();
+    const card=target.closest(".card"), descEl=card&&card.querySelector(".card-desc");
+    if(!descEl) return;
+    const full=descEl.getAttribute("data-full"), shortSpan=descEl.querySelector(".desc-short");
+    if(target.textContent === "Read More"){ shortSpan.textContent=full; target.textContent="Read Less"; }
+    else { shortSpan.textContent=full.slice(0,60)+(full.length>60?"…":""); target.textContent="Read More"; }
+  }
+});
+
+function toggleWishlist(id){
+  if(wishlist.has(id)) wishlist.delete(id); else wishlist.add(id);
+  localStorage.setItem("ahmad_wishlist", JSON.stringify([...wishlist]));
+  $("wishlistCount").textContent = wishlist.size;
+  renderProducts();
+}
+$("wishlistBtn").addEventListener("click", ()=>{
+  activeCategory = "all"; searchQuery=""; $("searchInput").value="";
+  const grid = $("productGrid");
+  const list = products.filter(p=>wishlist.has(p.id));
+  if(!list.length){ toast("Your wishlist is empty","info"); return; }
+  grid.innerHTML = list.map(p=>{
+    const rating = ratingFor(p.id);
+    return `<div class="card glass" data-id="${p.id}">
+      <div class="img-wrap" data-action="open" data-id="${p.id}">
+        <button class="wish-heart active" data-action="wish" data-id="${p.id}">❤</button>
+        <img loading="lazy" decoding="async" src="${escapeHtml(cldUrl(productImages(p)[0],400)||'')}" alt="${escapeHtml(p.title)}">
+      </div>
+      <div class="card-body">
+        <div class="card-title">${escapeHtml(p.title)}</div>
+        <div class="card-price ${p.deliveryType === "download" ? "hidden" : ""}">${p.deliveryType === "download" ? "" : fmtPrice(p.price)}</div>
+        <div class="card-rating">${rating.count? ('★ '+rating.avg.toFixed(1)) : 'No ratings yet'}</div>
+        <div class="card-actions">${(p.deliveryType === "download" || (!p.deliveryType && p.downloadLink && !p.whatsapp)) ? `<button class="btn btn-download" data-action="download" data-id="${p.id}"><span>DOWNLOAD</span><svg class="download-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 18v3h16v-3"/></svg></button>` : `<button class="btn btn-whatsapp" data-action="order" data-id="${p.id}">Order via WhatsApp</button>`}</div>
+      </div>
+    </div>`;
+  }).join("");
+});
+$("wishlistCount").textContent = wishlist.size;
+
+let pdDownloadTimer = null;
+function startDownloadCountdown(url){
+  if(!url || !/^https?:\/\//i.test(url)){ toast("This download link is invalid.","error"); return; }
+  if(pdDownloadTimer){ clearInterval(pdDownloadTimer); pdDownloadTimer = null; }
+  const wrap = $("pdDownloadProgress");
+  const count = $("pdDownloadCount");
+  const ready = $("pdDownloadReady");
+  if(!wrap || !count || !ready){ toast("Download area is unavailable. Please reopen the product.","error"); return; }
+  let remaining = 10;
+  ready.href = url;
+  ready.classList.add("hidden");
+  count.textContent = remaining;
+  wrap.classList.remove("hidden");
+  wrap.scrollIntoView({behavior:"smooth",block:"nearest"});
+  pdDownloadTimer = setInterval(()=>{
+    remaining -= 1;
+    count.textContent = Math.max(remaining,0);
+    if(remaining <= 0){
+      clearInterval(pdDownloadTimer);
+      pdDownloadTimer = null;
+      count.textContent = "Ready!";
+      ready.classList.remove("hidden");
+    }
+  },1000);
+}
+
+function orderOnWhatsapp(id, coupon){
+  const p = products.find(x=>x.id===id);
+  if(!p) return;
+  const num = (p.whatsapp || settings.defaultWhatsapp || "").replace(/[^0-9]/g,"");
+  if(!num){ toast("No WhatsApp number configured for this product","error"); return; }
+  let priceLine = `*${fmtPrice(p.price)}*`;
+  let couponLine = "";
+  if(coupon){
+    const discounted = p.price * (1 - coupon.percent/100);
+    priceLine = `*${fmtPrice(discounted)}* ~${fmtPrice(p.price)}~ (Coupon *${coupon.code}* -${coupon.percent}%)`;
+    couponLine = "";
+  }
+  const msg = `✨ *New Order* ✨\n\n🛍️ Product: *${p.title}*\n💰 Price: ${priceLine}\n🏬 Store: *${settings.storeName||"Usman Store"}*\n\nHello, I'd like to order this please.`;
+  window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, "_blank");
+}
+
+function shareProduct(id){
+  const p = products.find(x=>x.id===id);
+  if(!p) return;
+  const url = location.href.split("?")[0] + "?product=" + id;
+  if(navigator.share){
+    navigator.share({ title:p.title, text:`Check out ${p.title} on ${settings.storeName||"Usman Store"}`, url }).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(url).then(()=>toast("Product link copied!","success")).catch(()=>toast("Could not copy link","error"));
+  }
+}
+
+/* ---------------------------------------------------------------
+   8b. RECENTLY VIEWED (local to this device; no extra Firebase reads)
+--------------------------------------------------------------- */
+function rememberRecentlyViewed(id){
+  recentlyViewedIds = [id, ...recentlyViewedIds.filter(x=>x!==id)].slice(0,8);
+  try{ localStorage.setItem("usman_recently_viewed", JSON.stringify(recentlyViewedIds)); }catch(_){}
+  renderRecentlyViewed();
+}
+function renderRecentlyViewed(){
+  const wrap=$("recentlyViewedWrap"), row=$("recentlyViewedRow");
+  if(!wrap || !row) return;
+  const recent=recentlyViewedIds.map(id=>products.find(p=>p.id===id)).filter(Boolean);
+  if(!recent.length){ wrap.classList.add("hidden"); row.innerHTML=""; return; }
+  wrap.classList.remove("hidden");
+  row.innerHTML=recent.map(p=>{
+    const image=productImages(p)[0]||"";
+    return `<article class="recent-item" data-recent-id="${escapeHtml(p.id)}" tabindex="0" role="button" aria-label="View ${escapeHtml(p.title)}">
+      <img loading="lazy" decoding="async" src="${escapeHtml(cldUrl(image,240)||"")}" alt="${escapeHtml(p.title)}">
+      <div class="recent-name">${escapeHtml(p.title)}</div><div class="recent-price">${fmtPrice(p.price)}</div>
+    </article>`;
+  }).join("");
+}
+$("recentlyViewedRow").addEventListener("click",e=>{
+  const item=e.target.closest("[data-recent-id]");
+  if(item) openProductDetail(item.getAttribute("data-recent-id"));
+});
+$("recentlyViewedRow").addEventListener("keydown",e=>{
+  if(e.key!=="Enter" && e.key!==" ") return;
+  const item=e.target.closest("[data-recent-id]");
+  if(item){ e.preventDefault(); openProductDetail(item.getAttribute("data-recent-id")); }
+});
+$("clearRecentBtn").addEventListener("click",()=>{
+  recentlyViewedIds=[];
+  try{ localStorage.removeItem("usman_recently_viewed"); }catch(_){}
+  renderRecentlyViewed();
+  toast("Recently viewed list cleared","success");
+});
+
+/* ---------------------------------------------------------------
+   9. PRODUCT DETAIL MODAL + RATING
+--------------------------------------------------------------- */
+function openLightbox(url){
+  if(!url) return;
+  $("lightboxImg").src = url;
+  $("lightboxOverlay").classList.add("show");
+  document.body.style.overflow = "hidden";
+}
+function closeLightbox(){
+  $("lightboxOverlay").classList.remove("show");
+  document.body.style.overflow = "";
+}
+$("lightboxClose").addEventListener("click", closeLightbox);
+$("lightboxOverlay").addEventListener("click", e=>{ if(e.target.id === "lightboxOverlay") closeLightbox(); });
+
+function productImages(p){
+  if(Array.isArray(p.imageUrls) && p.imageUrls.length) return p.imageUrls;
+  if(p.imageUrl) return [p.imageUrl];
+  return [];
+}
+
+function openProductDetail(id){
+  if(pdDownloadTimer){ clearInterval(pdDownloadTimer); pdDownloadTimer = null; }
+  const progressWrap = $("pdDownloadProgress");
+  if(progressWrap) progressWrap.classList.add("hidden");
+  const p = products.find(x=>x.id===id);
+  if(!p) return;
+  currentPdProduct = p;
+  rememberRecentlyViewed(id);
+  appliedCoupon = null;
+  $("pdCouponInput").value = "";
+  $("pdCouponMsg").classList.add("hidden");
+  $("pdTitle").textContent = p.title;
+
+  const imgs = productImages(p);
+  pdGalleryImages = imgs;
+  $("pdGallery").innerHTML = imgs.length
+    ? imgs.map(u=>`<img src="${escapeHtml(cldUrl(u,900))}" alt="${escapeHtml(p.title)}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><rect width=%22200%22 height=%22200%22 fill=%22%231a1330%22/></svg>'">`).join("")
+    : `<img src="data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><rect width=%22200%22 height=%22200%22 fill=%22%231a1330%22/></svg>" alt="">`;
+  $("pdDots").innerHTML = imgs.length > 1 ? imgs.map((_,i)=>`<span class="${i===0?'on':''}"></span>`).join("") : "";
+  const galleryEl = $("pdGallery");
+  galleryEl.onscroll = debounce(()=>{
+    const idx = Math.round(galleryEl.scrollLeft / galleryEl.clientWidth);
+    $("pdDots").querySelectorAll("span").forEach((d,i)=>d.classList.toggle("on", i===idx));
+  }, 60);
+  galleryEl.querySelectorAll("img").forEach(img=>img.addEventListener("click", ()=>openLightbox(img.src)));
+
+  if(pdGalleryTimer){ clearInterval(pdGalleryTimer); pdGalleryTimer = null; }
+  if(imgs.length > 1){
+    pdGalleryTimer = setInterval(()=>{
+      if(!$("productOverlay").classList.contains("show")){ clearInterval(pdGalleryTimer); pdGalleryTimer = null; return; }
+      const next = (Math.round(galleryEl.scrollLeft / galleryEl.clientWidth) + 1) % imgs.length;
+      galleryEl.scrollTo({ left: next * galleryEl.clientWidth, behavior:"smooth" });
+    }, 2500);
+  }
+
+  const usesDownload = p.deliveryType === "download" || (!p.deliveryType && p.downloadLink && !p.whatsapp);
+  const usesApply = p.deliveryType === "apply";
+  $("pdPriceWrap").classList.toggle("hidden", usesDownload || usesApply);
+  $("pdCouponRow").classList.toggle("hidden", usesDownload || usesApply);
+  $("pdCouponMsg").classList.add("hidden");
+  renderPdPrice();
+  $("pdDesc").textContent = p.description || "No description provided.";
+  $("pdApplyWrap").classList.toggle("hidden", !usesApply);
+  $("pdApplyInstructions").textContent = usesApply ? (p.applyInstructions || "Apply instructions have not been added yet.") : "";
+  $("pdDownload").classList.toggle("hidden", !usesDownload || !p.downloadLink);
+  $("pdWhatsapp").classList.toggle("hidden", usesDownload || usesApply);
+  $("pdWhatsapp").textContent = "Order via WhatsApp";
+  selectedReviewStars = 0;
+  $("pdReviewText").value = "";
+  const myStars = myRatings[id] || 0;
+  $("pdStars").querySelectorAll("button").forEach(b=>{
+    b.classList.toggle("on", Number(b.getAttribute("data-v")) <= myStars);
+  });
+  db.collection("ratings").where("productId","==",id).get().then(snap=>renderProductReviews(id,snap.docs.map(d=>({id:d.id,...d.data()})))).catch(err=>{ console.error(err); $("pdReviewsList").textContent="Reviews could not be loaded."; });
+
+  const related = products.filter(x=>x.id!==p.id && x.categoryId===p.categoryId).slice(0,8);
+  if(related.length){
+    $("pdRelatedWrap").classList.remove("hidden");
+    $("pdRelated").innerHTML = related.map(r=>`
+      <div class="related-item" data-id="${r.id}">
+        <img src="${escapeHtml(cldUrl(r.imageUrl || (productImages(r)[0]||''), 200))}" alt="${escapeHtml(r.title)}">
+        <div class="rt">${escapeHtml(r.title.slice(0,26))}${r.title.length>26?'…':''}</div>
+        <div class="rp">${fmtPrice(r.price)}</div>
+      </div>`).join("");
+    $("pdRelated").querySelectorAll(".related-item").forEach(el=>el.addEventListener("click", ()=>openProductDetail(el.getAttribute("data-id"))));
+  } else {
+    $("pdRelatedWrap").classList.add("hidden");
+  }
+
+  openOverlay("productOverlay");
+}
+
+function renderPdPrice(){
+  const p = currentPdProduct;
+  if(!p) return;
+  if(appliedCoupon){
+    const discounted = p.price * (1 - appliedCoupon.percent/100);
+    $("pdOldPrice").textContent = fmtPrice(p.price);
+    $("pdOldPrice").classList.remove("hidden");
+    $("pdPrice").textContent = fmtPrice(discounted) + ` (-${appliedCoupon.percent}%)`;
+  } else {
+    $("pdOldPrice").classList.add("hidden");
+    $("pdPrice").textContent = fmtPrice(p.price);
+  }
+}
+
+$("pdCouponApply").addEventListener("click", ()=>{
+  const code = $("pdCouponInput").value.trim().toUpperCase();
+  $("pdCouponMsg").classList.remove("hidden");
+  if(!code){ $("pdCouponMsg").textContent = "Enter a coupon code."; return; }
+  const found = coupons.find(c => (c.code||"").toUpperCase() === code && c.active);
+  if(!found){ $("pdCouponMsg").textContent = "Invalid or expired coupon."; appliedCoupon = null; renderPdPrice(); return; }
+  appliedCoupon = { code: found.code, percent: Number(found.percent)||0 };
+  $("pdCouponMsg").textContent = `Coupon applied — ${appliedCoupon.percent}% off!`;
+  renderPdPrice();
+});
+$("pdWhatsapp").addEventListener("click", ()=>{ if(currentPdProduct) orderOnWhatsapp(currentPdProduct.id, appliedCoupon); });
+$("pdDownload").addEventListener("click", ()=>{ if(currentPdProduct && currentPdProduct.downloadLink) startDownloadCountdown(currentPdProduct.downloadLink); });
+$("pdShare").addEventListener("click", ()=>{ if(currentPdProduct) shareProduct(currentPdProduct.id); });
+let selectedReviewStars = 0;
+$("pdStars").querySelectorAll("button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    selectedReviewStars = Number(b.getAttribute("data-v"));
+    $("pdStars").querySelectorAll("button").forEach(x=>x.classList.toggle("on", Number(x.getAttribute("data-v"))<=selectedReviewStars));
+  });
+});
+
+$("pdReviewSubmit").addEventListener("click", async ()=>{
+  if(!currentPdProduct) return;
+  const stars = selectedReviewStars || Number(myRatings[currentPdProduct.id]||0);
+  if(!stars){ toast("Please select a star rating first.","error"); return; }
+  const reviewText = $("pdReviewText").value.trim();
+  try{
+    const uid = getAnonId();
+    await db.collection("ratings").doc(currentPdProduct.id + "_" + uid).set({
+      productId: currentPdProduct.id, stars, review: reviewText, uid,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, {merge:true});
+    myRatings[currentPdProduct.id] = stars;
+    localStorage.setItem("ahmad_myratings", JSON.stringify(myRatings));
+    toast("Your rating has been submitted.","success");
+  }catch(e){ console.error(e); toast("Could not submit. Check Firestore rules/connection.","error"); }
+});
+
+function renderProductReviews(productId, docs){
+  const box = $("pdReviewsList");
+  if(!box || !currentPdProduct || currentPdProduct.id !== productId) return;
+  const entries = docs.filter(r=>r.productId===productId && Number(r.stars)>=1 && Number(r.stars)<=5 && (r.review||"").trim());
+  entries.sort((a,b)=>((b.updatedAt?.seconds||0)-(a.updatedAt?.seconds||0)));
+  if(!entries.length){ box.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:10px 0;">No written reviews yet. Be the first to share an honest review.</div>'; return; }
+  box.innerHTML = '<div style="font-size:12px;font-weight:700;margin-bottom:8px;">Customer reviews ('+entries.length+')</div>' + entries.map(r=>
+    '<div style="padding:10px;margin-bottom:8px;border:1px solid var(--panel-border);border-radius:12px;background:var(--panel);">' +
+    '<div style="color:#f5b82e;letter-spacing:2px;">'+'★'.repeat(Number(r.stars))+'<span style="color:var(--muted);">'+'☆'.repeat(5-Number(r.stars))+'</span></div>' +
+    '<div style="font-size:13px;line-height:1.5;margin-top:5px;white-space:pre-wrap;overflow-wrap:anywhere;">'+escapeHtml(r.review)+'</div>' +
+    '<div style="font-size:10px;color:var(--muted);margin-top:6px;">Customer review</div></div>'
+  ).join("");
+}
+
+function getAnonId(){
+  let id = localStorage.getItem("ahmad_anon_id");
+  if(!id){ id = "anon_" + Math.random().toString(36).slice(2) + Date.now(); localStorage.setItem("ahmad_anon_id", id); }
+  return id;
+}
+
+/* ---------------------------------------------------------------
+   10. STATS / BACK TO TOP
+--------------------------------------------------------------- */
+function updateStats(){
+  $("statProducts").textContent = products.length;
+  $("statCategories").textContent = categories.length;
+}
+window.addEventListener("scroll", ()=>{
+  $("backTopBtn").classList.toggle("show", window.scrollY > 500);
+}, {passive:true});
+$("backTopBtn").addEventListener("click", ()=>window.scrollTo({top:0,behavior:"smooth"}));
+
+/* ---------------------------------------------------------------
+   11. SOCIAL FOOTER (public)
+--------------------------------------------------------------- */
+const SOCIAL_META = {
+  whatsapp:{label:"Follow Us on WhatsApp", color:"linear-gradient(135deg,#25D366,#1aa851)", icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.6 1.4 5.1L2 22l5.1-1.3C8.5 21.5 10.2 22 12 22c5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>'},
+  youtube:{label:"Follow Us on YouTube", color:"linear-gradient(135deg,#ff0000,#c00)", icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M23 12s0-3.6-.5-5.3c-.3-1-1-1.7-2-2C18.7 4.2 12 4.2 12 4.2s-6.7 0-8.5.5c-1 .3-1.7 1-2 2C1 8.4 1 12 1 12s0 3.6.5 5.3c.3 1 1 1.7 2 2 1.8.5 8.5.5 8.5.5s6.7 0 8.5-.5c1-.3 1.7-1 2-2 .5-1.7.5-5.3.5-5.3zM9.8 15.5V8.5l6.3 3.5-6.3 3.5z"/></svg>'},
+  tiktok:{label:"Follow Us on TikTok", color:"linear-gradient(135deg,#25F4EE,#000,#FE2C55)", icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M16.5 2h-3v13.6a3 3 0 11-2.5-2.96V9.5a6 6 0 105 6V9c1.2.8 2.6 1.3 4 1.3V7.3c-2 0-3.5-1.3-3.5-3.3z"/></svg>'},
+  instagram:{label:"Instagram", color:"linear-gradient(135deg,#f58529,#dd2a7b,#8134af,#515bd4)", icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12 2c2.7 0 3 0 4.1.06 1.1.05 1.8.22 2.4.46.7.27 1.2.6 1.7 1.1.5.5.9 1 1.1 1.7.25.6.4 1.3.46 2.4.06 1.1.06 1.4.06 4.1s0 3-.06 4.1c-.05 1.1-.22 1.8-.46 2.4-.27.7-.6 1.2-1.1 1.7-.5.5-1 .9-1.7 1.1-.6.25-1.3.4-2.4.46-1.1.06-1.4.06-4.1.06s-3 0-4.1-.06c-1.1-.05-1.8-.22-2.4-.46-.7-.27-1.2-.6-1.7-1.1-.5-.5-.9-1-1.1-1.7-.25-.6-.4-1.3-.46-2.4C2 15 2 14.7 2 12s0-3 .06-4.1c.05-1.1.22-1.8.46-2.4.27-.7.6-1.2 1.1-1.7.5-.5 1-.9 1.7-1.1.6-.25 1.3-.4 2.4-.46C9 2 9.3 2 12 2zm0 1.8c-2.6 0-2.9 0-4 .06-.9.04-1.4.18-1.7.3-.4.16-.7.35-1 .65-.3.3-.5.6-.65 1-.12.3-.26.8-.3 1.7C4.3 8.6 4.3 8.9 4.3 12s0 2.9.06 4c.04.9.18 1.4.3 1.7.16.4.35.7.65 1 .3.3.6.5 1 .65.3.12.8.26 1.7.3 1.1.06 1.4.06 4 .06s2.9 0 4-.06c.9-.04 1.4-.18 1.7-.3.4-.16.7-.35 1-.65.3-.3.5-.6.65-1 .12-.3.26-.8.3-1.7.06-1.1.06-1.4.06-4s0-2.9-.06-4c-.04-.9-.18-1.4-.3-1.7-.16-.4-.35-.7-.65-1-.3-.3-.6-.5-1-.65-.3-.12-.8-.26-1.7-.3-1.1-.06-1.4-.06-4-.06zM12 7a5 5 0 110 10 5 5 0 010-10zm0 1.8a3.2 3.2 0 100 6.4 3.2 3.2 0 000-6.4zm5.2-2a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"/></svg>'},
+  facebook:{label:"Facebook", color:"linear-gradient(135deg,#1877F2,#0e5bc4)", icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M22 12a10 10 0 10-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0022 12z"/></svg>'},
+  telegram:{label:"Telegram", color:"linear-gradient(135deg,#2AABEE,#229ED9)", icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M21.5 4.5L2.7 11.9c-1.2.5-1.2 1.2-.2 1.5l4.8 1.5 1.8 5.6c.2.6.4.8.9.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.8l3-14.1c.3-1.2-.4-1.7-1.8-1.7z"/></svg>'},
+  x:{label:"X", color:"linear-gradient(135deg,#000,#333)", icon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M18.9 2H22l-7.2 8.3L23 22h-6.6l-5.2-6.8L5.2 22H2l7.7-8.8L1.4 2H8.2l4.7 6.2L18.9 2zm-1.2 18h1.8L7.4 4H5.5L17.7 20z"/></svg>'},
+  discord:{label:"Discord", color:"linear-gradient(135deg,#5865F2,#4752c4)", icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M20 5.4C18.6 4.7 17.1 4.2 15.6 4c-.2.4-.4.8-.6 1.3-1.6-.2-3.3-.2-5 0-.1-.5-.3-.9-.6-1.3-1.5.2-3 .7-4.4 1.4C2.4 9 1.7 12.6 2 16.1c1.7 1.3 3.4 2 5 2.5.4-.6.8-1.2 1.1-1.9-.6-.2-1.2-.5-1.7-.8.1-.1.3-.2.4-.3 3.3 1.5 6.9 1.5 10.2 0 .1.1.3.2.4.3-.5.3-1.1.6-1.7.8.3.7.7 1.3 1.1 1.9 1.6-.5 3.3-1.2 5-2.5.4-4-.6-7.6-2.8-10.7zM9 14c-.8 0-1.5-.8-1.5-1.7S8.2 10.6 9 10.6s1.5.8 1.5 1.7S9.8 14 9 14zm6 0c-.8 0-1.5-.8-1.5-1.7s.7-1.7 1.5-1.7 1.5.8 1.5 1.7-.7 1.7-1.5 1.7z"/></svg>'}
+};
+function validSocialUrl(key, raw){
+  try{
+    const u = new URL(String(raw||"").trim());
+    if(u.protocol !== "https:") return false;
+    const host = u.hostname.toLowerCase();
+    if(key === "whatsapp") return host === "wa.me" || host === "whatsapp.com" || host.endsWith(".whatsapp.com");
+    if(key === "tiktok") return host === "tiktok.com" || host.endsWith(".tiktok.com");
+    return false;
+  }catch(_){ return false; }
+}
+function renderSocialFooter(){
+  const wrap = $("socialRow");
+  const footer = wrap.closest("footer");
+  const order = ["whatsapp","tiktok"];
+  const html = order.filter(k=>validSocialUrl(k, socialLinks[k]) && socialLinks[k+"Enabled"] !== false).map(k=>{
+    const m = SOCIAL_META[k];
+    const label = k === "whatsapp" ? "WhatsApp" : "TikTok";
+    return `<a class="social-btn glass" href="${escapeHtml(socialLinks[k])}" target="_blank" rel="noopener noreferrer" aria-label="Open ${label}">
+      <span class="social-icon" style="background:${m.color}">${m.icon}</span><span class="social-label">${label}</span></a>`;
+  }).join("");
+  wrap.innerHTML = html;
+  footer.classList.toggle("hidden", !html);
+}
+$("yearNow").textContent = new Date().getFullYear();
+renderSocialFooter();
+
+/* ---------------------------------------------------------------
+   12. TOASTS wired for global errors
+--------------------------------------------------------------- */
+window.addEventListener("error", (event)=>{ console.error("Usman Store UI error:", event.message); });
+document.addEventListener("visibilitychange", ()=>{
+  document.body.classList.toggle("is-backgrounded", document.hidden);
+  if(document.hidden){
+    if(bannerAutoTimer){ clearInterval(bannerAutoTimer); bannerAutoTimer=null; }
+    if(pdGalleryTimer){ clearInterval(pdGalleryTimer); pdGalleryTimer=null; }
+  } else {
+    if(banners.length>1 && !bannerAutoTimer){
+      const track=$("bannerTrack");
+      bannerAutoTimer=setInterval(()=>{
+        if(document.hidden) return;
+        const next=(Math.round(track.scrollLeft/track.clientWidth)+1)%banners.length;
+        track.scrollTo({left:next*track.clientWidth,behavior:"smooth"});
+      },3500);
+    }
+  }
+});
+
+/* ==========================================================================
+   ADMIN AREA
+   ========================================================================== */
+
+/* ---- 13. Admin login (Firebase Auth email/password) ---- */
+$("adminLoginBtn").addEventListener("click", async ()=>{
+  const email = $("adminEmail").value.trim();
+  const pass = $("adminPassword").value;
+  $("adminLoginError").classList.add("hidden");
+  if(!email || !pass){ showAdminLoginError("Please enter email and password."); return; }
+  $("adminLoginBtn").disabled = true;
+  $("adminLoginBtn").innerHTML = '<div class="spinner" style="display:inline-block"></div>';
+  try{
+    await auth.signInWithEmailAndPassword(email, pass);
+    closeOverlay("adminLoginOverlay");
+    $("adminEmail").value = ""; $("adminPassword").value = "";
+    toast("Welcome back, Admin!","success");
+  }catch(e){
+    console.error("Firebase email/password login failed:", e);
+    const code = e && e.code ? e.code : "unknown";
+    const friendly = code.includes("invalid-credential") || code.includes("wrong-password") || code.includes("user-not-found")
+      ? "Email ya password ghalat hai."
+      : code.includes("operation-not-allowed")
+        ? "Firebase Console mein Email/Password sign-in enable karein."
+        : code.includes("network")
+          ? "Internet connection check karein."
+          : `${code}: ${(e && e.message) ? e.message : "Login failed."}`;
+    showAdminLoginError(friendly);
+  }finally{
+    $("adminLoginBtn").disabled = false;
+    $("adminLoginBtn").textContent = "Login";
+  }
+});
+["adminEmail","adminPassword"].forEach(id=>$(id).addEventListener("keydown", e=>{ if(e.key === "Enter"){ e.preventDefault(); $("adminLoginBtn").click(); } }));
+function showAdminLoginError(msg){
+  $("adminLoginError").textContent = msg;
+  $("adminLoginError").classList.remove("hidden");
+}
+
+auth.onAuthStateChanged(user=>{
+  isAdmin = !!user && !user.isAnonymous;
+  if(isAdmin){
+    openAdminShell();
+  } else {
+    $("adminShell").classList.remove("show");
+    document.body.style.overflow = "";
+  }
+});
+
+$("adminLogoutBtn").addEventListener("click", ()=>{
+  auth.signOut().then(()=>toast("Logged out","info"));
+});
+
+function openAdminShell(){
+  $("adminShell").classList.add("show");
+  document.body.style.overflow = "hidden";
+  renderDashboard();
+  renderAdminProducts();
+  renderAdminCategories();
+  renderAdminCoupons();
+  renderAdminBanners();
+  renderAdminSocial();
+  renderStoreSettingsPanel();
+}
+
+/* ---- Admin nav ---- */
+document.querySelectorAll(".admin-nav-item[data-panel]").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".admin-nav-item[data-panel]").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".admin-panel").forEach(p=>p.classList.remove("active"));
+    const panel = btn.getAttribute("data-panel");
+    $("panel-" + panel).classList.add("active");
+    $("adminPanelTitle").textContent = btn.textContent.trim().replace(/^\S+\s/,"");
+    $("adminSidebar").classList.remove("open");
+  });
+});
+$("adminMenuBtn").addEventListener("click", ()=>$("adminSidebar").classList.toggle("open"));
+
+/* ---- Dashboard ---- */
+function renderDashboard(){
+  $("dashProducts").textContent = products.length;
+  $("dashCategories").textContent = categories.length;
+  let ratingCount = 0; Object.values(ratingsAgg).forEach(r=>ratingCount+=r.count);
+  $("dashRatings").textContent = ratingCount;
+  $("dashWishlist").textContent = wishlist.size;
+  $("dashBanners").textContent = banners.length;
+  const recent = products.slice(0,5);
+  $("dashRecent").innerHTML = recent.length ? recent.map(p=>`
+    <div class="admin-row">
+      <div class="admin-row-info"><div class="admin-row-title">${escapeHtml(p.title)}</div><div class="admin-row-sub">${fmtPrice(p.price)}</div></div>
+    </div>`).join("") : `<div style="color:var(--muted2);font-size:12.5px;">No products yet.</div>`;
+}
+
+/* ---- 14. CATEGORY MANAGEMENT (admin) ---- */
+function renderProductCategorySelect(){
+  const sel = $("pfCategory");
+  const current = sel.value;
+  sel.innerHTML = categories.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("");
+  if(current) sel.value = current;
+}
+
+function renderAdminCategories(){
+  const wrap = $("categoriesListWrap");
+  let html = `<button class="btn-primary" id="addCategoryBtn" style="margin-bottom:10px;">+ Add Category</button>`;
+  html += `<button class="btn-secondary" id="seedCategoriesBtn" style="margin-bottom:14px;">⚡ Add All 6 Default Categories</button>`;
+  if(!categories.length){
+    html += `<div style="color:var(--muted2);font-size:12.5px;">No categories yet. Add one to get started.</div>`;
+  } else {
+    html += categories.map((c,i)=>`
+      <div class="admin-row" data-id="${c.id}">
+        <div class="admin-row-info"><div class="admin-row-title">${escapeHtml(c.name)}</div><div class="admin-row-sub">Order: ${c.order ?? i}</div></div>
+        <div class="admin-row-actions">
+          <button class="icon-sm-btn" data-action="cat-up" data-id="${c.id}" title="Move left">↑</button>
+          <button class="icon-sm-btn" data-action="cat-down" data-id="${c.id}" title="Move right">↓</button>
+          <button class="icon-sm-btn" data-action="cat-edit" data-id="${c.id}">✎</button>
+          <button class="icon-sm-btn danger" data-action="cat-del" data-id="${c.id}">🗑</button>
+        </div>
+      </div>`).join("");
+  }
+  wrap.innerHTML = html;
+  $("addCategoryBtn").addEventListener("click", ()=>openCategoryForm(null));
+  $("seedCategoriesBtn").addEventListener("click", seedDefaultCategories);
+  wrap.querySelectorAll('[data-action="cat-edit"]').forEach(b=>b.addEventListener("click", ()=>openCategoryForm(b.getAttribute("data-id"))));
+  wrap.querySelectorAll('[data-action="cat-del"]').forEach(b=>b.addEventListener("click", ()=>{
+    const id = b.getAttribute("data-id");
+    const cat = categories.find(c=>c.id===id);
+    openConfirm(`Delete category "${cat.name}"?`, "This does not delete products in this category, but they will lose their category tag.", async ()=>{
+      try{ await db.collection("categories").doc(id).delete(); toast("Category deleted","success"); }
+      catch(e){ console.error(e); toast("Could not delete category","error"); }
+    });
+  }));
+  wrap.querySelectorAll('[data-action="cat-up"]').forEach(b=>b.addEventListener("click", ()=>reorderCategory(b.getAttribute("data-id"), -1)));
+  wrap.querySelectorAll('[data-action="cat-down"]').forEach(b=>b.addEventListener("click", ()=>reorderCategory(b.getAttribute("data-id"), 1)));
+}
+
+async function reorderCategory(id, dir){
+  const idx = categories.findIndex(c=>c.id===id);
+  const swapIdx = idx + dir;
+  if(swapIdx < 0 || swapIdx >= categories.length) return;
+  const a = categories[idx], b = categories[swapIdx];
+  const orderA = a.order ?? idx, orderB = b.order ?? swapIdx;
+  try{
+    const batch = db.batch();
+    batch.update(db.collection("categories").doc(a.id), {order: orderB});
+    batch.update(db.collection("categories").doc(b.id), {order: orderA});
+    await batch.commit();
+  }catch(e){ console.error(e); toast("Could not reorder categories","error"); }
+}
+
+const DEFAULT_CATEGORIES = [
+  "Real Cricket 24 100 level I'd",
+  "Real Cricket Swipe 100 level I'd",
+  "Real Cricket 24 & Swipe community mods",
+  "Cricket 26 Subscription",
+  "Xbox game pass",
+  "Real Cricket 24 Subscriptions"
+];
+async function seedDefaultCategories(){
+  const btn = $("seedCategoriesBtn");
+  btn.disabled = true;
+  btn.textContent = "Adding...";
+  try{
+    const existingNames = new Set(categories.map(c=>c.name));
+    let maxOrder = categories.reduce((m,c)=>Math.max(m, c.order ?? 0), -1);
+    const batch = db.batch();
+    let addedCount = 0;
+    DEFAULT_CATEGORIES.forEach(name=>{
+      if(existingNames.has(name)) return;
+      maxOrder += 1;
+      const ref = db.collection("categories").doc();
+      batch.set(ref, { name, order: maxOrder, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+      addedCount += 1;
+    });
+    if(addedCount === 0){ toast("These categories already exist","info"); }
+    else { await batch.commit(); toast(addedCount + " categories added!","success"); }
+  }catch(e){
+    console.error(e);
+    toast("Could not add categories — check Firestore rules/connection","error");
+  }finally{
+    btn.disabled = false;
+    btn.textContent = "⚡ Add All 6 Default Categories";
+  }
+}
+
+function openCategoryForm(id){
+  editingCategoryId = id;
+  const cat = id ? categories.find(c=>c.id===id) : null;
+  $("categoryFormTitle").textContent = id ? "Edit Category" : "Add Category";
+  $("cfName").value = cat ? cat.name : "";
+  $("cfError").classList.add("hidden");
+  openOverlay("categoryFormOverlay");
+}
+$("cfSaveBtn").addEventListener("click", async ()=>{
+  const name = $("cfName").value.trim();
+  if(!name){ $("cfError").textContent = "Category name is required."; $("cfError").classList.remove("hidden"); return; }
+  $("cfSaveBtn").disabled = true;
+  try{
+    if(editingCategoryId){
+      await db.collection("categories").doc(editingCategoryId).update({ name });
+      toast("Category updated","success");
+    } else {
+      const maxOrder = categories.reduce((m,c)=>Math.max(m, c.order ?? 0), -1);
+      await db.collection("categories").add({ name, order: maxOrder + 1, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+      toast("Category added","success");
+    }
+    closeOverlay("categoryFormOverlay");
+  }catch(e){
+    console.error(e);
+    $("cfError").textContent = "Could not save category. Check your Firestore rules/connection.";
+    $("cfError").classList.remove("hidden");
+  }finally{ $("cfSaveBtn").disabled = false; }
+});
+
+/* ---- 14b. COUPONS (admin) ---- */
+function renderAdminCoupons(){
+  const wrap = $("couponsListWrap");
+  let html = `<button class="btn-primary" id="addCouponBtn" style="margin-bottom:14px;">+ Add Coupon</button>`;
+  if(!coupons.length){
+    html += `<div style="color:var(--muted2);font-size:12.5px;">No coupons yet. Add one to offer discounts.</div>`;
+  } else {
+    html += coupons.map(c=>`
+      <div class="admin-row" data-id="${c.id}">
+        <div class="admin-row-info"><div class="admin-row-title">${escapeHtml(c.code)} — ${c.percent}% off</div><div class="admin-row-sub">${c.active ? 'Active' : 'Inactive'}</div></div>
+        <div class="admin-row-actions">
+          <button class="icon-sm-btn" data-action="cp-edit" data-id="${c.id}">✎</button>
+          <button class="icon-sm-btn danger" data-action="cp-del" data-id="${c.id}">🗑</button>
+        </div>
+      </div>`).join("");
+  }
+  wrap.innerHTML = html;
+  $("addCouponBtn").addEventListener("click", ()=>openCouponForm(null));
+  wrap.querySelectorAll('[data-action="cp-edit"]').forEach(b=>b.addEventListener("click", ()=>openCouponForm(b.getAttribute("data-id"))));
+  wrap.querySelectorAll('[data-action="cp-del"]').forEach(b=>b.addEventListener("click", ()=>{
+    const id = b.getAttribute("data-id");
+    const c = coupons.find(x=>x.id===id);
+    openConfirm(`Delete coupon "${c.code}"?`, "This action cannot be undone.", async ()=>{
+      try{ await db.collection("coupons").doc(id).delete(); toast("Coupon deleted","success"); }
+      catch(e){ console.error(e); toast("Could not delete coupon","error"); }
+    });
+  }));
+}
+function openCouponForm(id){
+  editingCouponId = id;
+  const c = id ? coupons.find(x=>x.id===id) : null;
+  $("couponFormTitle").textContent = id ? "Edit Coupon" : "Add Coupon";
+  $("cpCode").value = c ? c.code : "";
+  $("cpPercent").value = c ? c.percent : "";
+  $("cpActive").checked = c ? !!c.active : true;
+  $("cpError").classList.add("hidden");
+  openOverlay("couponFormOverlay");
+}
+$("cpSaveBtn").addEventListener("click", async ()=>{
+  const code = $("cpCode").value.trim().toUpperCase();
+  const percent = parseInt($("cpPercent").value, 10);
+  const active = $("cpActive").checked;
+  if(!code || isNaN(percent) || percent < 1 || percent > 100){
+    $("cpError").textContent = "Enter a valid code and a discount between 1-100%.";
+    $("cpError").classList.remove("hidden");
+    return;
+  }
+  $("cpSaveBtn").disabled = true;
+  try{
+    if(editingCouponId){
+      await db.collection("coupons").doc(editingCouponId).update({ code, percent, active });
+      toast("Coupon updated","success");
+    } else {
+      await db.collection("coupons").add({ code, percent, active, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+      toast("Coupon added","success");
+    }
+    closeOverlay("couponFormOverlay");
+  }catch(e){
+    console.error(e);
+    $("cpError").textContent = "Could not save coupon. Check your Firestore rules/connection.";
+    $("cpError").classList.remove("hidden");
+  }finally{ $("cpSaveBtn").disabled = false; }
+});
+
+/* ---- 14c. BANNERS (admin) ---- */
+const MAX_BANNERS = 4;
+function renderAdminBanners(){
+  const wrap = $("bannersListWrap");
+  const canAddMore = banners.length < MAX_BANNERS;
+  let html = canAddMore
+    ? `<button class="btn-primary" id="addBannerBtn" style="margin-bottom:14px;">+ Add Banner</button>`
+    : `<div class="field-hint" style="margin-bottom:14px;">Maximum ${MAX_BANNERS} banners reached. Delete one to add another.</div>`;
+  if(!banners.length){
+    html += `<div style="color:var(--muted2);font-size:12.5px;">No banners yet. Add one to show a rotating promo carousel at the top (max ${MAX_BANNERS}).</div>`;
+  } else {
+    html += banners.map((b,i)=>`
+      <div class="admin-row" data-id="${b.id}">
+        <img src="${escapeHtml(cldUrl(b.imageUrl,120)||'')}" style="width:56px;height:32px;object-fit:cover;border-radius:6px;flex:0 0 auto;margin-right:10px;">
+        <div class="admin-row-info"><div class="admin-row-title">Banner ${i+1}</div><div class="admin-row-sub">${b.link ? escapeHtml(b.link) : 'No link'}</div></div>
+        <div class="admin-row-actions">
+          <button class="icon-sm-btn" data-action="ban-up" data-id="${b.id}" title="Move up">↑</button>
+          <button class="icon-sm-btn" data-action="ban-down" data-id="${b.id}" title="Move down">↓</button>
+          <button class="icon-sm-btn" data-action="ban-edit" data-id="${b.id}">✎</button>
+          <button class="icon-sm-btn danger" data-action="ban-del" data-id="${b.id}">🗑</button>
+        </div>
+      </div>`).join("");
+  }
+  wrap.innerHTML = html;
+  if(canAddMore) $("addBannerBtn").addEventListener("click", ()=>openBannerForm(null));
+  wrap.querySelectorAll('[data-action="ban-edit"]').forEach(b=>b.addEventListener("click", ()=>openBannerForm(b.getAttribute("data-id"))));
+  wrap.querySelectorAll('[data-action="ban-del"]').forEach(b=>b.addEventListener("click", ()=>{
+    const id = b.getAttribute("data-id");
+    openConfirm("Delete this banner?", "This action cannot be undone.", async ()=>{
+      try{ await db.collection("banners").doc(id).delete(); toast("Banner deleted","success"); }
+      catch(e){ console.error(e); toast("Could not delete banner","error"); }
+    });
+  }));
+  wrap.querySelectorAll('[data-action="ban-up"]').forEach(b=>b.addEventListener("click", ()=>reorderBanner(b.getAttribute("data-id"), -1)));
+  wrap.querySelectorAll('[data-action="ban-down"]').forEach(b=>b.addEventListener("click", ()=>reorderBanner(b.getAttribute("data-id"), 1)));
+}
+async function reorderBanner(id, dir){
+  const idx = banners.findIndex(b=>b.id===id);
+  const swapIdx = idx + dir;
+  if(swapIdx < 0 || swapIdx >= banners.length) return;
+  const a = banners[idx], b = banners[swapIdx];
+  const orderA = a.order ?? idx, orderB = b.order ?? swapIdx;
+  try{
+    const batch = db.batch();
+    batch.update(db.collection("banners").doc(a.id), {order: orderB});
+    batch.update(db.collection("banners").doc(b.id), {order: orderA});
+    await batch.commit();
+  }catch(e){ console.error(e); toast("Could not reorder banners","error"); }
+}
+function openBannerForm(id){
+  if(!id && banners.length >= MAX_BANNERS){ toast(`Maximum ${MAX_BANNERS} banners allowed`, "error"); return; }
+  editingBannerId = id;
+  const b = id ? banners.find(x=>x.id===id) : null;
+  pendingBannerImageUrl = b ? b.imageUrl : null;
+  $("bannerFormTitle").textContent = id ? "Edit Banner" : "Add Banner";
+  $("bfLink").value = b ? (b.link||"") : "";
+  $("bfImageFile").value = "";
+  $("bfUploadProgressWrap").classList.add("hidden");
+  if(b && b.imageUrl){ $("bfImagePreview").src = b.imageUrl; $("bfImagePreview").classList.remove("hidden"); }
+  else { $("bfImagePreview").classList.add("hidden"); }
+  $("bfError").classList.add("hidden");
+  openOverlay("bannerFormOverlay");
+}
+$("bfImageFile").addEventListener("change", async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  $("bfUploadProgressWrap").classList.remove("hidden");
+  $("bfUploadProgressBar").style.width = "10%";
+  try{
+    const url = await uploadToCloudinary(file, pct=>{ $("bfUploadProgressBar").style.width = pct + "%"; });
+    pendingBannerImageUrl = url;
+    $("bfImagePreview").src = url;
+    $("bfImagePreview").classList.remove("hidden");
+    $("bfUploadProgressBar").style.width = "100%";
+    setTimeout(()=>$("bfUploadProgressWrap").classList.add("hidden"), 500);
+  }catch(err){
+    console.error(err);
+    toast("Image upload failed","error");
+    $("bfUploadProgressWrap").classList.add("hidden");
+  }
+});
+$("bfSaveBtn").addEventListener("click", async ()=>{
+  if(!pendingBannerImageUrl){
+    $("bfError").textContent = "Please upload a banner image.";
+    $("bfError").classList.remove("hidden");
+    return;
+  }
+  $("bfSaveBtn").disabled = true;
+  const link = $("bfLink").value.trim();
+  try{
+    // Make sure the Firebase email/password admin session is present and its token is fresh.
+    if(!auth.currentUser) throw new Error("ADMIN_NOT_SIGNED_IN: Please log in again with your Firebase admin email and password.");
+    await auth.currentUser.getIdToken(true);
+    const bannerData = {
+      imageUrl: pendingBannerImageUrl,
+      link,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    if(editingBannerId){
+      await db.collection("banners").doc(editingBannerId).update(bannerData);
+      toast("Banner updated","success");
+    } else {
+      const maxOrder = banners.reduce((m,b)=>Math.max(m, b.order ?? 0), -1);
+      await db.collection("banners").add({
+        ...bannerData,
+        order: maxOrder + 1,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      toast("Banner added","success");
+    }
+    pendingBannerImageUrl = null;
+    closeOverlay("bannerFormOverlay");
+  }catch(e){
+    console.error("Firestore banner save failed:", e);
+    const code = e && e.code ? e.code : "unknown";
+    const detail = e && e.message ? e.message : String(e);
+    $("bfError").textContent = `Banner save failed (${code}): ${detail}`;
+    $("bfError").classList.remove("hidden");
+  }finally{ $("bfSaveBtn").disabled = false; }
+});
+
+/* ---- 15. PRODUCT MANAGEMENT (admin) ---- */
+function renderAdminProducts(){
+  const wrap = $("productsListWrap");
+  let html = `<button class="btn-primary" id="addProductBtn" style="margin-bottom:14px;">+ Add Product</button>`;
+  if(!products.length){
+    html += `<div style="color:var(--muted2);font-size:12.5px;">No products yet.</div>`;
+  } else {
+    html += products.map(p=>{
+      const cat = categories.find(c=>c.id===p.categoryId);
+      return `<div class="admin-row" data-id="${p.id}">
+        <div class="admin-row-info"><div class="admin-row-title">${escapeHtml(p.title)}</div><div class="admin-row-sub">${fmtPrice(p.price)} · ${cat?escapeHtml(cat.name):'Uncategorized'}</div></div>
+        <div class="admin-row-actions">
+          <button class="icon-sm-btn" data-action="prod-edit" data-id="${p.id}">✎</button>
+          <button class="icon-sm-btn danger" data-action="prod-del" data-id="${p.id}">🗑</button>
+        </div>
+      </div>`;
+    }).join("");
+  }
+  wrap.innerHTML = html;
+  $("addProductBtn").addEventListener("click", ()=>openProductForm(null));
+  wrap.querySelectorAll('[data-action="prod-edit"]').forEach(b=>b.addEventListener("click", ()=>openProductForm(b.getAttribute("data-id"))));
+  wrap.querySelectorAll('[data-action="prod-del"]').forEach(b=>b.addEventListener("click", ()=>{
+    const id = b.getAttribute("data-id");
+    const p = products.find(x=>x.id===id);
+    openConfirm(`Delete product "${p.title}"?`, "This action cannot be undone.", async ()=>{
+      try{ await db.collection("products").doc(id).delete(); toast("Product deleted","success"); }
+      catch(e){ console.error(e); toast("Could not delete product","error"); }
+    });
+  }));
+}
+
+let pendingImageUrls = [];
+function renderPfGallery(){
+  $("pfGalleryWrap").innerHTML = pendingImageUrls.map((u,i)=>`
+    <div class="gallery-thumb"><img src="${escapeHtml(cldUrl(u,120))}" alt=""><button class="rm" data-idx="${i}">✕</button></div>
+  `).join("");
+  $("pfGalleryWrap").querySelectorAll(".rm").forEach(b=>b.addEventListener("click", ()=>{
+    pendingImageUrls.splice(Number(b.getAttribute("data-idx")), 1);
+    renderPfGallery();
+  }));
+}
+
+function openProductForm(id){
+  editingProductId = id;
+  const p = id ? products.find(x=>x.id===id) : null;
+  pendingImageUrls = p ? productImages(p).slice() : [];
+  $("productFormTitle").textContent = id ? "Edit Product" : "Add Product";
+  $("pfTitle").value = p ? p.title : "";
+  renderProductCategorySelect();
+  if(p) $("pfCategory").value = p.categoryId || "";
+  $("pfPrice").value = p ? p.price : "";
+  const initialDelivery = p ? (p.deliveryType || (p.downloadLink && !p.whatsapp ? "download" : "whatsapp")) : "whatsapp";
+  $("pfDeliveryType").value = initialDelivery;
+  $("pfWhatsapp").value = p ? (p.whatsapp||"") : "";
+  $("pfDescription").value = p ? (p.description||"") : "";
+  $("pfDownload").value = p ? (p.downloadLink||"") : "";
+  $("pfApplyInstructions").value = p ? (p.applyInstructions||"") : "";
+  updateProductDeliveryFields();
+  $("pfImageFile").value = "";
+  $("pfUploadProgressWrap").classList.add("hidden");
+  renderPfGallery();
+  $("pfError").classList.add("hidden");
+  if(!categories.length){
+    $("pfError").textContent = "Add a category first before adding products.";
+    $("pfError").classList.remove("hidden");
+  }
+  openOverlay("productFormOverlay");
+}
+
+function updateProductDeliveryFields(){
+  const mode = $("pfDeliveryType").value;
+  $("pfWhatsappWrap").classList.toggle("hidden", mode !== "whatsapp");
+  $("pfDownloadWrap").classList.toggle("hidden", mode !== "download");
+  // Selling products need a price; gifting/download products do not.
+  $("pfPriceWrap").classList.toggle("hidden", mode !== "whatsapp");
+  $("pfPrice").required = mode === "whatsapp";
+  $("pfWhatsapp").required = mode === "whatsapp";
+  $("pfDownload").required = mode === "download";
+  $("pfApplyWrap").classList.toggle("hidden", mode !== "apply");
+  $("pfApplyInstructions").required = mode === "apply";
+}
+$("pfDeliveryType").addEventListener("change", updateProductDeliveryFields);
+
+const MAX_PRODUCT_IMAGES = 3;
+$("pfImageFile").addEventListener("change", async (e)=>{
+  let files = Array.from(e.target.files || []);
+  if(!files.length) return;
+  const remaining = MAX_PRODUCT_IMAGES - pendingImageUrls.length;
+  if(remaining <= 0){ toast(`Maximum ${MAX_PRODUCT_IMAGES} images allowed per product`, "error"); e.target.value=""; return; }
+  if(files.length > remaining){
+    toast(`Only ${remaining} more image(s) can be added (max ${MAX_PRODUCT_IMAGES})`, "info");
+    files = files.slice(0, remaining);
+  }
+  $("pfUploadProgressWrap").classList.remove("hidden");
+  $("pfUploadProgressBar").style.width = "5%";
+  try{
+    for(let i=0;i<files.length;i++){
+      const url = await uploadToCloudinary(files[i], pct=>{
+        const overall = Math.round(((i + pct/100) / files.length) * 100);
+        $("pfUploadProgressBar").style.width = overall + "%";
+      });
+      pendingImageUrls.push(url);
+      renderPfGallery();
+    }
+    $("pfUploadProgressBar").style.width = "100%";
+    setTimeout(()=>$("pfUploadProgressWrap").classList.add("hidden"), 500);
+  }catch(err){
+    console.error(err);
+    toast("Image upload failed","error");
+    $("pfUploadProgressWrap").classList.add("hidden");
+  }
+});
+
+function uploadToCloudinary(file, onProgress){
+  return new Promise((resolve, reject)=>{
+    const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", url);
+    xhr.upload.onprogress = (e)=>{ if(e.lengthComputable && onProgress) onProgress(Math.round((e.loaded/e.total)*100)); };
+    xhr.onload = ()=>{
+      try{
+        const res = JSON.parse(xhr.responseText);
+        if(res.secure_url) resolve(res.secure_url); else reject(new Error("No secure_url returned"));
+      }catch(err){ reject(err); }
+    };
+    xhr.onerror = ()=>reject(new Error("Network error during upload"));
+    xhr.send(formData);
+  });
+}
+
+$("pfSaveBtn").addEventListener("click", async ()=>{
+  const title = $("pfTitle").value.trim();
+  const categoryId = $("pfCategory").value;
+  const deliveryType = $("pfDeliveryType").value;
+  const priceInput = $("pfPrice").value.trim();
+  const price = deliveryType === "whatsapp" ? Number(priceInput) : null;
+  const whatsapp = $("pfWhatsapp").value.trim();
+  const description = $("pfDescription").value.trim();
+  const downloadLink = $("pfDownload").value.trim();
+  const applyInstructions = $("pfApplyInstructions").value.trim();
+  let validDownload = false;
+  try {
+    const parsedDownload = new URL(downloadLink);
+    validDownload = (parsedDownload.protocol === "http:" || parsedDownload.protocol === "https:") && !!parsedDownload.hostname;
+  } catch (_) { validDownload = false; }
+
+  let validationMessage = "";
+  if(!title) validationMessage = "Please enter a product title.";
+  else if(!categoryId) validationMessage = "Please select a category.";
+  else if(!pendingImageUrls.length) validationMessage = "Please upload at least one product image and wait for it to finish uploading.";
+  else if(deliveryType === "whatsapp" && (!priceInput || !Number.isFinite(price) || price < 0)) validationMessage = "Please enter a valid product price.";
+  else if(deliveryType === "whatsapp" && !whatsapp) validationMessage = "Please enter the WhatsApp number for orders.";
+  else if(deliveryType === "download" && !validDownload) validationMessage = "Please enter a valid http(s) download link.";
+  else if(deliveryType === "apply" && !applyInstructions) validationMessage = "Please enter the apply instructions.";
+
+  if(validationMessage){
+    $("pfError").textContent = validationMessage;
+    $("pfError").classList.remove("hidden");
+    return;
+  }
+  $("pfError").classList.add("hidden");
+  $("pfSaveBtn").disabled = true;
+  const payload = { title, categoryId, price: deliveryType === "whatsapp" ? price : null, deliveryType, whatsapp: deliveryType === "whatsapp" ? whatsapp : "", description, downloadLink: deliveryType === "download" ? downloadLink : "", applyInstructions: deliveryType === "apply" ? applyInstructions : "", imageUrls: pendingImageUrls.slice(), imageUrl: pendingImageUrls[0] };
+  try{
+    if(editingProductId){
+      await db.collection("products").doc(editingProductId).update(payload);
+      toast("Product updated","success");
+    } else {
+      payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection("products").add(payload);
+      toast("Product added","success");
+    }
+    closeOverlay("productFormOverlay");
+  }catch(e){
+    console.error(e);
+    $("pfError").textContent = "Could not save product. Check your Firestore rules/connection.";
+    $("pfError").classList.remove("hidden");
+  }finally{ $("pfSaveBtn").disabled = false; }
+});
+
+/* ---- 16. Social Links (admin) ---- */
+const SOCIAL_KEYS = ["whatsapp","tiktok"];
+function renderAdminSocial(){
+  const wrap = $("socialListWrap");
+  wrap.innerHTML = SOCIAL_KEYS.map(k=>{
+    const val = socialLinks[k] || "";
+    const enabled = socialLinks[k+"Enabled"] !== false;
+    return `<div class="admin-row"><div class="admin-row-info"><div class="admin-row-title">${k === "whatsapp" ? "WhatsApp" : "TikTok"}</div><div class="admin-row-sub">${val?escapeHtml(val):'Not set'} · ${enabled?'Enabled':'Disabled'}</div></div><div class="admin-row-actions"><button class="icon-sm-btn" data-action="soc-edit" data-key="${k}" title="Edit link">✎</button><button class="icon-sm-btn" data-action="soc-toggle" data-key="${k}" title="Enable or disable">${enabled?'ON':'OFF'}</button>${val?`<button class="icon-sm-btn danger" data-action="soc-del" data-key="${k}">🗑</button>`:''}</div></div>`;
+  }).join("");
+  wrap.querySelectorAll('[data-action="soc-edit"]').forEach(b=>b.addEventListener("click", ()=>openSocialEdit(b.getAttribute("data-key"))));
+  wrap.querySelectorAll('[data-action="soc-toggle"]').forEach(b=>b.addEventListener("click", async ()=>{
+    const key = b.getAttribute("data-key"); const next = socialLinks[key+"Enabled"] === false;
+    try{ await db.collection("socialLinks").doc("main").set({[key+"Enabled"]:next},{merge:true}); toast(next?"Link enabled":"Link disabled","success"); }
+    catch(e){ console.error(e); toast("Could not update link status","error"); }
+  }));
+  wrap.querySelectorAll('[data-action="soc-del"]').forEach(b=>b.addEventListener("click", ()=>{
+    const key = b.getAttribute("data-key");
+    openConfirm(`Remove ${key} link?`, "The icon will disappear from the public footer.", async ()=>{
+      try{ await db.collection("socialLinks").doc("main").set({[key]: firebase.firestore.FieldValue.delete(),[key+"Enabled"]:false}, {merge:true}); toast("Link removed","success"); }
+      catch(e){ console.error(e); toast("Could not remove link","error"); }
+    });
+  }));
+}
+function openSocialEdit(key){
+  openGenericForm(`Edit ${key} link`, [{id:"soc_val", label:"URL", value: socialLinks[key]||"", placeholder:"https://..."}], async (vals)=>{
+    const url = vals.soc_val.trim();
+    if(url && !validSocialUrl(key, url)) throw new Error(key === "whatsapp" ? "Enter a valid HTTPS WhatsApp link (wa.me or whatsapp.com)." : "Enter a valid HTTPS TikTok profile link.");
+    await db.collection("socialLinks").doc("main").set({[key]: url}, {merge:true});
+    toast("Social link saved","success");
+  });
+}
+
+/* ---- 17. Store Settings / WhatsApp default / Security (admin, generic form) ---- */
+function renderStoreSettingsPanel(){
+  $("storeNameDisplay").textContent = settings.storeName || "Usman Store";
+  $("heroTitleDisplay").textContent = settings.heroTitle || "USMAN STORE";
+  $("heroDescDisplay").textContent = settings.heroDesc || "";
+  $("defaultWhatsappDisplay").textContent = settings.defaultWhatsapp || "Not set";
+  $("paymentMethodsDisplay").textContent = settings.paymentMethods || "Not set";
+  const supportEmail = settings.supportEmail || "ua760436@gmail.com";
+  $("supportEmailDisplay").textContent = supportEmail;
+  $("footerSupportEmailLink").href = "mailto:" + supportEmail;
+  $("supportEmailInline").href = "mailto:" + supportEmail;
+  $("supportEmailInline").textContent = supportEmail;
+  if(settings.logoUrl){ $("logoPreviewAdmin").src = cldUrl(settings.logoUrl,80); $("logoPreviewAdmin").classList.remove("hidden"); }
+  else { $("logoPreviewAdmin").classList.add("hidden"); }
+}
+$("logoUploadBtn").addEventListener("click", ()=>$("logoFileInput").click());
+$("logoFileInput").addEventListener("change", async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  try{
+    toast("Uploading logo...","info");
+    const url = await uploadToCloudinary(file);
+    await db.collection("settings").doc("store").set({logoUrl:url},{merge:true});
+    toast("Logo updated","success");
+  }catch(err){ console.error(err); toast("Could not upload logo","error"); }
+  e.target.value = "";
+});
+document.querySelectorAll("[data-generic]").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    const key = btn.getAttribute("data-generic");
+    if(key === "storeName") openGenericForm("Edit Store Name", [{id:"v",label:"Store Name",value:settings.storeName||""}], async v=>{ await db.collection("settings").doc("store").set({storeName:v.v.trim()},{merge:true}); toast("Saved","success"); });
+    else if(key === "heroTitle") openGenericForm("Edit Hero Title", [{id:"v",label:"Hero Title",value:settings.heroTitle||""}], async v=>{ await db.collection("settings").doc("store").set({heroTitle:v.v.trim()},{merge:true}); toast("Saved","success"); });
+    else if(key === "heroDesc") openGenericForm("Edit Hero Description", [{id:"v",label:"Hero Description",value:settings.heroDesc||"",textarea:true}], async v=>{ await db.collection("settings").doc("store").set({heroDesc:v.v.trim()},{merge:true}); toast("Saved","success"); });
+    else if(key === "supportEmail") openGenericForm("Edit Support Email", [{id:"v",label:"Support Email Address",value:settings.supportEmail||"ua760436@gmail.com",placeholder:"support@example.com"}], async v=>{ const email=v.v.trim(); if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter a valid email address."); await db.collection("settings").doc("store").set({supportEmail:email},{merge:true}); settings.supportEmail=email; renderStoreSettingsPanel(); toast("Support email updated","success"); });
+    else if(key === "paymentMethods") openGenericForm("Payment Methods", [{id:"v",label:"Payment Methods (comma separated)",value:settings.paymentMethods||"",placeholder:"JazzCash, EasyPaisa"}], async v=>{ await db.collection("settings").doc("store").set({paymentMethods:v.v.trim()},{merge:true}); toast("Saved","success"); });
+    else if(key === "defaultWhatsapp") openGenericForm("Default WhatsApp Number", [{id:"v",label:"Number (with country code)",value:settings.defaultWhatsapp||"",placeholder:"923001234567"}], async v=>{ await db.collection("settings").doc("store").set({defaultWhatsapp:v.v.trim()},{merge:true}); toast("Saved","success"); });
+    else if(key === "secretCode") openGenericForm("Admin Secret Search Code", [{id:"v",label:"New Secret Code",value:settings.secretCode||"",placeholder:"e.g. usman2233"}], async v=>{
+      const nv = v.v.trim();
+      if(nv.length < 4){ throw new Error("Secret code should be at least 4 characters."); }
+      await db.collection("settings").doc("store").set({secretCode:nv},{merge:true});
+      toast("Secret code updated — old code is now inactive","success");
+    });
+  });
+});
+
+function openGenericForm(title, fields, onSave){
+  $("gfTitle").textContent = title;
+  $("gfError").classList.add("hidden");
+  $("gfFieldsWrap").innerHTML = fields.map(f=>`
+    <div class="field"><label>${escapeHtml(f.label)}</label>
+    ${f.textarea ? `<textarea id="gf_${f.id}" placeholder="${escapeHtml(f.placeholder||'')}">${escapeHtml(f.value||'')}</textarea>`
+                  : `<input id="gf_${f.id}" type="text" value="${escapeHtml(f.value||'')}" placeholder="${escapeHtml(f.placeholder||'')}">`}
+    </div>`).join("");
+  genericSaveCallback = async ()=>{
+    const vals = {};
+    fields.forEach(f=>{ vals[f.id] = $("gf_"+f.id).value; });
+    await onSave(vals);
+  };
+  openOverlay("genericFormOverlay");
+}
+$("gfSaveBtn").addEventListener("click", async ()=>{
+  if(!genericSaveCallback) return;
+  $("gfSaveBtn").disabled = true;
+  try{
+    await genericSaveCallback();
+    closeOverlay("genericFormOverlay");
+  }catch(e){
+    console.error(e);
+    $("gfError").textContent = e.message || "Could not save. Check your connection.";
+    $("gfError").classList.remove("hidden");
+  }finally{ $("gfSaveBtn").disabled = false; }
+});
+
+/* ---- 18. Confirm modal (generic, used by delete actions) ---- */
+function openConfirm(title, msg, onYes){
+  $("confirmTitle").textContent = title;
+  $("confirmMsg").textContent = msg;
+  confirmCallback = onYes;
+  openOverlay("confirmOverlay");
+}
+$("confirmYesBtn").addEventListener("click", async ()=>{
+  if(!confirmCallback) return;
+  $("confirmYesBtn").disabled = true;
+  try{ await confirmCallback(); closeOverlay("confirmOverlay"); }
+  catch(e){ console.error(e); toast("Action failed","error"); }
+  finally{ $("confirmYesBtn").disabled = false; confirmCallback = null; }
+});
+
+
+/* ---- 18A. Lightweight store assistant (no model API / no backend) ---- */
+const aiPanel = $("usmanAiPanel"), aiMessages = $("usmanAiMessages"), aiInput = $("usmanAiInput");
+function aiAddMessage(text, who="bot", html=false){
+  const node=document.createElement("div"); node.className="usman-ai-msg "+who;
+  if(html) node.innerHTML=text; else node.textContent=text;
+  aiMessages.appendChild(node); aiMessages.scrollTop=aiMessages.scrollHeight;
+}
+function aiNorm(v){return String(v||"").toLowerCase().replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim();}
+function aiReply(raw){
+  const q=aiNorm(raw);
+  if(!q) return "Apna sawal ya product ka naam likhein.";
+  if(/\b(hi|hello|salam|assalam|aoa|hey)\b/.test(q)) return "Wa-alaikum-assalam! 😊 Product ka naam batayein, main store mein check karta hoon.";
+  if(/\b(available products|all products|products dikhao|show products|kya available|product list)\b/.test(q)){
+    if(!products.length) return "Abhi products load nahi huay. Thori dair baad dobara try karein.";
+    return "Store mein abhi "+products.length+" product(s) available hain: "+products.slice(0,8).map(p=>p.title||"Untitled product").join(", ")+(products.length>8?" aur bhi products hain.":".");
+  }
+  if(/\b(category|categories|kis type|types)\b/.test(q)) return categories.length ? "Available categories: "+categories.map(c=>c.name).filter(Boolean).join(", ")+"." : "Categories abhi load nahi huin.";
+  if(/\b(payment|pay|jazzcash|easypaisa|price kaise|payment method)\b/.test(q)) return "Payment/order details product ke Order via WhatsApp button se store admin se confirm karein. Listed payment methods: "+(settings.paymentMethods||"Admin se confirm karein")+".";
+  if(/\b(download kaise|how to download|download help|download karun|download process)\b/.test(q)) return "Download product par DOWNLOAD button dabayein. Countdown complete hone ke baad Download Now par tap karein. Agar link na khule to admin se contact karein.";
+  if(/\b(contact|whatsapp|support|admin)\b/.test(q)) return "Support ke liye page par WhatsApp button use karein. Agar WhatsApp link set nahi hai to footer ke Connect With Us links check karein.";
+  const matches=products.filter(p=>{
+    const title=aiNorm(p.title), desc=aiNorm(p.description), cat=aiNorm((categories.find(c=>c.id===p.categoryId)||{}).name);
+    const words=q.split(" ").filter(w=>w.length>2);
+    return title && (title.includes(q)||q.includes(title)||words.some(w=>title.includes(w)||desc.includes(w)||cat.includes(w)));
+  }).slice(0,4);
+  if(matches.length){
+    return "Store mein ye matching product(s) mile hain:\\n"+matches.map(p=>{
+      const category=(categories.find(c=>c.id===p.categoryId)||{}).name||"Uncategorized";
+      const price=(p.deliveryType==="download"?"Free download":(p.price!=null?"Rs. "+Number(p.price).toLocaleString("en-PK"):"Price store se confirm karein"));
+      const action=p.deliveryType==="download"&&p.downloadLink?`<a href="${escapeHtml(p.downloadLink)}" target="_blank" rel="noopener">Open download link</a>`:(p.deliveryType==="apply" ? `<b>How to Apply:</b><br>${escapeHtml(p.applyInstructions||"Apply instructions are not available yet.")}` : (p.whatsapp?"Order via product card on WhatsApp":"Open product card for details"));
+      return `<b>${escapeHtml(p.title||"Product")}</b> · ${escapeHtml(category)} · ${escapeHtml(price)}<br>${action}`;
+    }).join("<br><br>");
+  }
+  if(/\b(price|cost|kitne|qeemat|rate)\b/.test(q)) return "Kis product ki price chahiye? Product ka exact naam likhein.";
+  return "Mujhe is sawal ka exact jawab nahi mila. Product ka naam likhein ya Products button se available items dekhein. Ye basic store helper hai, live AI chatbot nahi.";
+}
+function aiSend(value){
+  const msg=String(value||"").trim(); if(!msg) return;
+  aiAddMessage(msg,"user"); aiInput.value="";
+  const reply=aiReply(msg); aiAddMessage(reply,"bot",reply.includes("<a ")||reply.includes("<b>"));
+}
+$("usmanAiLaunch").addEventListener("click",()=>{aiPanel.classList.toggle("open");const open=aiPanel.classList.contains("open");aiPanel.setAttribute("aria-hidden",String(!open));if(open)aiInput.focus();});
+$("usmanAiClose").addEventListener("click",()=>{aiPanel.classList.remove("open");aiPanel.setAttribute("aria-hidden","true");});
+$("usmanAiForm").addEventListener("submit",e=>{e.preventDefault();aiSend(aiInput.value);});
+document.querySelectorAll("[data-ai-quick]").forEach(b=>b.addEventListener("click",()=>aiSend(b.getAttribute("data-ai-quick"))));
+
+/* ---------------------------------------------------------------
+   19. BOOT
+--------------------------------------------------------------- */
+listenCollections();
+
+})();
+</script>
+</body>
+</html>
