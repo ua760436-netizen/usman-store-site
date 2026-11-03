@@ -740,17 +740,13 @@ body{background:var(--page-bg)!important;}
       <span style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:800;" id="pdPrice"></span>
     </div>
     <div style="margin-top:10px;color:var(--muted);font-size:13.5px;line-height:1.6" id="pdDesc"></div>
+    <div id="pdCredit" class="hidden" style="margin-top:8px;font-size:12px;color:var(--muted);font-weight:600;"></div>
     <div id="pdApplyWrap" class="hidden" style="margin-top:14px;padding:14px;border:1px solid var(--panel-border);border-radius:14px;background:var(--panel);"><strong style="display:block;margin-bottom:7px;">How to Apply</strong><div id="pdApplyInstructions" style="white-space:pre-wrap;color:var(--text);font-size:13.5px;line-height:1.65;"></div></div>
 
-    <div class="coupon-row" id="pdCouponRow">
-      <input id="pdCouponInput" type="text" placeholder="Have a coupon code?" style="text-transform:uppercase">
-      <button id="pdCouponApply">Apply</button>
-    </div>
-    <div class="error-text hidden" id="pdCouponMsg" style="text-align:left;"></div>
-
-    <div id="pdRelatedWrap" class="hidden">
-      <div style="font-size:12px;color:var(--muted);margin:16px 0 6px;text-transform:uppercase;letter-spacing:1px;">You may also like</div>
-      <div class="related-row" id="pdRelated"></div>
+    <div class="card-actions" style="margin-top:16px;">
+      <button class="btn btn-whatsapp" id="pdWhatsapp">Order on WhatsApp</button>
+      <button class="btn btn-download hidden" id="pdDownload" title="Download"><span>DOWNLOAD</span><svg class="download-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 18v3h16v-3"/></svg></button>
+      <button class="btn btn-share" id="pdShare" title="Share">↗</button>
     </div>
 
     <div style="margin-top:16px;">
@@ -764,15 +760,16 @@ body{background:var(--page-bg)!important;}
       </div>
       <div id="pdReviewsList" style="margin-top:14px;"></div>
     </div>
-    <div id="pdDownloadProgress" class="hidden" style="margin-top:14px;padding:14px;border:1px solid var(--panel-border);border-radius:14px;background:var(--panel);text-align:center;">
-      <div style="font-weight:700;margin-bottom:6px;">Your download is getting ready</div>
-      <div style="font-size:14px;color:var(--muted);">Downloading in <strong id="pdDownloadCount" style="font-size:24px;color:var(--text);">10</strong> seconds</div>
-      <a id="pdDownloadReady" class="btn btn-download hidden" href="#" target="_blank" rel="noopener" style="display:block;margin-top:12px;text-decoration:none;"><span>DOWNLOAD</span><svg class="download-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 18v3h16v-3"/></svg></a>
+
+    <div class="coupon-row" id="pdCouponRow" style="margin-top:16px;">
+      <input id="pdCouponInput" type="text" placeholder="Have a coupon code?" style="text-transform:uppercase">
+      <button id="pdCouponApply">Apply</button>
     </div>
-    <div class="card-actions" style="margin-top:16px;">
-      <button class="btn btn-whatsapp" id="pdWhatsapp">Order on WhatsApp</button>
-      <button class="btn btn-download hidden" id="pdDownload" title="Download"><span>DOWNLOAD</span><svg class="download-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 18v3h16v-3"/></svg></button>
-      <button class="btn btn-share" id="pdShare" title="Share">↗</button>
+    <div class="error-text hidden" id="pdCouponMsg" style="text-align:left;"></div>
+
+    <div id="pdRelatedWrap" class="hidden">
+      <div style="font-size:12px;color:var(--muted);margin:16px 0 6px;text-transform:uppercase;letter-spacing:1px;">You may also like</div>
+      <div class="related-row" id="pdRelated"></div>
     </div>
   </div>
 </div>
@@ -809,6 +806,7 @@ body{background:var(--page-bg)!important;}
     <div class="field"><label>Delivery Method *</label><select id="pfDeliveryType"><option value="whatsapp">Selling — Order via WhatsApp</option><option value="download">Gifting — Direct Download Link</option><option value="apply">Apply — Instructions Only</option></select><small style="display:block;color:var(--muted);margin-top:6px;">Choose one method. Customers will only see the matching button.</small></div>
     <div class="field" id="pfWhatsappWrap"><label>WhatsApp Number *</label><input id="pfWhatsapp" type="tel" inputmode="numeric" placeholder="e.g. 923001234567 (with country code)"></div>
     <div class="field"><label>Description (optional)</label><textarea id="pfDescription" placeholder="Tell customers more about this product"></textarea></div>
+    <div class="field"><label>Credit / Creator Name (optional)</label><input id="pfCredit" type="text" maxlength="80" placeholder="e.g. Created by Ahmed"></div>
     <div class="field hidden" id="pfDownloadWrap"><label>Download Link *</label><input id="pfDownload" type="url" placeholder="https://..."></div>
     <div class="field hidden" id="pfApplyWrap"><label>Apply Instructions *</label><textarea id="pfApplyInstructions" rows="4" placeholder="Explain where and how customers should apply for this product..."></textarea><small style="display:block;color:var(--muted);margin-top:6px;">These instructions will be shown to customers and Usman AI.</small></div>
     <div class="field">
@@ -1351,7 +1349,7 @@ productGridEl.addEventListener("click", e=>{
   else if(action === "zoom"){ e.stopPropagation(); const p=products.find(x=>x.id===id); if(p) openLightbox(productImages(p)[0]); }
   else if(action === "open"){ openProductDetail(id); }
   else if(action === "order"){ e.stopPropagation(); orderOnWhatsapp(id); }
-  else if(action === "download"){ e.stopPropagation(); const p=products.find(x=>x.id===id); if(p&&p.downloadLink){ openProductDetail(id); startDownloadCountdown(p.downloadLink); } }
+  else if(action === "download"){ e.stopPropagation(); const p=products.find(x=>x.id===id); if(p&&p.downloadLink&&/^https?:\/\//i.test(p.downloadLink)){ window.open(p.downloadLink, "_blank", "noopener,noreferrer"); } }
   else if(action === "share"){ e.stopPropagation(); shareProduct(id); }
   else if(action === "readmore"){
     e.stopPropagation();
@@ -1550,6 +1548,9 @@ function openProductDetail(id){
   $("pdCouponMsg").classList.add("hidden");
   renderPdPrice();
   $("pdDesc").textContent = p.description || "No description provided.";
+  const creditText = (p.credit || "").trim();
+  $("pdCredit").textContent = creditText ? `Credit: ${creditText}` : "";
+  $("pdCredit").classList.toggle("hidden", !creditText);
   $("pdApplyWrap").classList.toggle("hidden", !usesApply);
   $("pdApplyInstructions").textContent = usesApply ? (p.applyInstructions || "Apply instructions have not been added yet.") : "";
   $("pdDownload").classList.toggle("hidden", !usesDownload || !p.downloadLink);
@@ -1605,7 +1606,7 @@ $("pdCouponApply").addEventListener("click", ()=>{
   renderPdPrice();
 });
 $("pdWhatsapp").addEventListener("click", ()=>{ if(currentPdProduct) orderOnWhatsapp(currentPdProduct.id, appliedCoupon); });
-$("pdDownload").addEventListener("click", ()=>{ if(currentPdProduct && currentPdProduct.downloadLink) startDownloadCountdown(currentPdProduct.downloadLink); });
+$("pdDownload").addEventListener("click", ()=>{ if(currentPdProduct && currentPdProduct.downloadLink && /^https?:\/\//i.test(currentPdProduct.downloadLink)){ window.open(currentPdProduct.downloadLink, "_blank", "noopener,noreferrer"); } });
 $("pdShare").addEventListener("click", ()=>{ if(currentPdProduct) shareProduct(currentPdProduct.id); });
 let selectedReviewStars = 0;
 $("pdStars").querySelectorAll("button").forEach(b=>{
@@ -2196,6 +2197,7 @@ function openProductForm(id){
   $("pfDeliveryType").value = initialDelivery;
   $("pfWhatsapp").value = p ? (p.whatsapp||"") : "";
   $("pfDescription").value = p ? (p.description||"") : "";
+  $("pfCredit").value = p ? (p.credit||"") : "";
   $("pfDownload").value = p ? (p.downloadLink||"") : "";
   $("pfApplyInstructions").value = p ? (p.applyInstructions||"") : "";
   updateProductDeliveryFields();
@@ -2282,6 +2284,7 @@ $("pfSaveBtn").addEventListener("click", async ()=>{
   const price = deliveryType === "whatsapp" ? Number(priceInput) : null;
   const whatsapp = $("pfWhatsapp").value.trim();
   const description = $("pfDescription").value.trim();
+  const credit = $("pfCredit").value.trim().slice(0,80);
   const downloadLink = $("pfDownload").value.trim();
   const applyInstructions = $("pfApplyInstructions").value.trim();
   let validDownload = false;
@@ -2306,7 +2309,7 @@ $("pfSaveBtn").addEventListener("click", async ()=>{
   }
   $("pfError").classList.add("hidden");
   $("pfSaveBtn").disabled = true;
-  const payload = { title, categoryId, price: deliveryType === "whatsapp" ? price : null, deliveryType, whatsapp: deliveryType === "whatsapp" ? whatsapp : "", description, downloadLink: deliveryType === "download" ? downloadLink : "", applyInstructions: deliveryType === "apply" ? applyInstructions : "", imageUrls: pendingImageUrls.slice(), imageUrl: pendingImageUrls[0] };
+  const payload = { title, categoryId, price: deliveryType === "whatsapp" ? price : null, deliveryType, whatsapp: deliveryType === "whatsapp" ? whatsapp : "", description, credit, downloadLink: deliveryType === "download" ? downloadLink : "", applyInstructions: deliveryType === "apply" ? applyInstructions : "", imageUrls: pendingImageUrls.slice(), imageUrl: pendingImageUrls[0] };
   try{
     if(editingProductId){
       await db.collection("products").doc(editingProductId).update(payload);
