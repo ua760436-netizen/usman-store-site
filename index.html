@@ -1321,7 +1321,8 @@ function renderProducts(){
       <div class="card-body">
         <div class="card-title" data-action="open" data-id="${p.id}">${escapeHtml(p.title)}</div>
         <div class="card-price ${(p.deliveryType === "download" || p.deliveryType === "apply") ? "hidden" : ""}">${(p.deliveryType === "download" || p.deliveryType === "apply") ? "" : fmtPrice(p.price)}</div>
-        <div class="card-rating">${rating.count? ('★ '+rating.avg.toFixed(1)+' ('+rating.count+')') : 'No ratings yet'}</div>
+        <div class="card-rating" id="cardRating-${p.id}">${rating.count? ('★ '+rating.avg.toFixed(1)+' ('+rating.count+')') : 'No ratings yet'}</div>
+        ${p.credit ? `<div class="card-credit" style="margin:7px 0 10px;padding:8px 10px;border-left:3px solid var(--accent,#d49b2e);background:var(--panel);border-radius:8px;font-size:13px;font-weight:700;overflow-wrap:anywhere;">Credit: ${escapeHtml(p.credit)}</div>` : ''}
         ${hasDesc ? `<div class="card-desc" data-full="${escapeHtml(p.description)}"><span class="desc-short">${escapeHtml(p.description.slice(0,60))}${p.description.length>60?'…':''}</span></div>
         ${p.description.length>60?`<button class="read-more-btn" data-action="readmore" data-id="${p.id}">Read More</button>`:''}` : ''}
         <div class="card-actions">
@@ -1332,6 +1333,16 @@ function renderProducts(){
               : `<button class="btn btn-whatsapp" data-action="order" data-id="${p.id}">Order via WhatsApp</button>`}
           <button class="btn btn-share" data-action="share" data-id="${p.id}" title="Share">↗</button>
         </div>
+        <div class="card-customer-tools" style="margin-top:12px;padding:12px;border:1px solid var(--panel-border);border-radius:13px;background:var(--panel);" data-card-tools="${p.id}">
+          <div style="font-size:13px;font-weight:800;margin-bottom:7px;">Submit Rating &amp; Review</div>
+          <div class="card-star-input" data-card-stars="${p.id}" style="display:flex;gap:5px;margin-bottom:9px;">
+            ${[1,2,3,4,5].map(n=>`<button type="button" data-action="card-star" data-id="${p.id}" data-v="${n}" aria-label="${n} stars" style="border:0;background:transparent;color:#d49b2e;font-size:23px;padding:0 3px;">☆</button>`).join('')}
+          </div>
+          <textarea data-card-review="${p.id}" maxlength="500" rows="2" placeholder="Write your review (optional)..." style="width:100%;resize:vertical;padding:10px;border:1px solid var(--panel-border);border-radius:10px;background:#fff;color:#222;font:inherit;font-size:13px;"></textarea>
+          <button type="button" class="btn btn-primary" data-action="card-review-submit" data-id="${p.id}" style="width:100%;margin-top:8px;">Submit Rating &amp; Review</button>
+          <div data-card-reviews="${p.id}" style="margin-top:9px;font-size:12px;color:var(--muted);">Customer ratings and reviews appear here.</div>
+          ${(p.deliveryType === 'whatsapp' || (!p.deliveryType && !p.downloadLink)) ? `<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--panel-border);"><strong style="font-size:13px;display:block;margin-bottom:7px;">Coupon Code</strong><div style="display:flex;gap:7px;"><input data-card-coupon="${p.id}" type="text" maxlength="30" placeholder="Enter coupon code" style="min-width:0;flex:1;padding:10px;border:1px solid var(--panel-border);border-radius:9px;text-transform:uppercase;background:#fff;color:#222;"><button type="button" class="btn btn-primary" data-action="card-coupon" data-id="${p.id}" style="padding:8px 13px;">Apply</button></div><div data-card-coupon-msg="${p.id}" style="font-size:12px;margin-top:6px;"></div></div>` : ''}
+        </div>
       </div>
     </div>`;
   }).join("");
@@ -1340,15 +1351,55 @@ function renderProducts(){
 
 // One delegated handler serves all product cards, including wishlist results.
 const productGridEl = $("productGrid");
-productGridEl.addEventListener("click", e=>{
+productGridEl.addEventListener("click", async e=>{
   const target = e.target.closest("[data-action]");
   if(!target || !productGridEl.contains(target)) return;
   const action = target.getAttribute("data-action");
   const id = target.getAttribute("data-id");
+  if(action === "card-star"){
+    e.stopPropagation();
+    const value=Number(target.getAttribute("data-v"));
+    const wrap=productGridEl.querySelector(`[data-card-stars="${id}"]`);
+    if(wrap){ wrap.dataset.selected=String(value); wrap.querySelectorAll('button').forEach(b=>{const on=Number(b.dataset.v)<=value;b.textContent=on?'★':'☆';b.style.color=on?'#d49b2e':'#9a9a9a';}); }
+    return;
+  }
+  if(action === "card-review-submit"){
+    e.stopPropagation();
+    const btn=target, wrap=productGridEl.querySelector(`[data-card-stars="${id}"]`), stars=Number(wrap?.dataset.selected||0), field=productGridEl.querySelector(`[data-card-review="${id}"]`), review=(field?.value||'').trim();
+    if(!stars){toast('Please select a star rating first.','error');return;}
+    if(review.length>500){toast('Review must be 500 characters or fewer.','error');return;}
+    btn.disabled=true;btn.textContent='Submitting...';
+    try{
+      const uid=getAnonId();
+      await db.collection('ratings').doc(id+'_'+uid).set({productId:id,stars,review,uid,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+      if(field) field.value='';
+      toast('Rating submitted successfully!','success');
+      const snap=await db.collection('ratings').where('productId','==',id).get();
+      const valid=snap.docs.map(d=>d.data()).filter(r=>Number(r.stars)>=1&&Number(r.stars)<=5);
+      const avg=valid.length?valid.reduce((a,r)=>a+Number(r.stars),0)/valid.length:0;
+      const ratingEl=productGridEl.querySelector(`#cardRating-${CSS.escape(id)}`);
+      if(ratingEl) ratingEl.textContent=valid.length?`★ ${avg.toFixed(1)} (${valid.length})`:'No ratings yet';
+      const reviewBox=productGridEl.querySelector(`[data-card-reviews="${id}"]`);
+      if(reviewBox){const written=valid.filter(r=>(r.review||'').trim()).slice(-3).reverse();reviewBox.innerHTML=written.length?'<strong>Customer reviews</strong>'+written.map(r=>`<div style="padding:7px 0;border-top:1px solid var(--panel-border);"><span style="color:#d49b2e;">${'★'.repeat(Number(r.stars))}</span><div style="margin-top:3px;overflow-wrap:anywhere;">${escapeHtml(r.review)}</div></div>`).join(''):'No written reviews yet.';}
+    }catch(err){console.error(err);toast('Could not submit review. Check connection/permissions.','error');}
+    finally{btn.disabled=false;btn.textContent='Submit Rating & Review';}
+    return;
+  }
+  if(action === "card-coupon"){
+    e.stopPropagation();
+    const field=productGridEl.querySelector(`[data-card-coupon="${id}"]`), msg=productGridEl.querySelector(`[data-card-coupon-msg="${id}"]`), code=(field?.value||'').trim().toUpperCase();
+    const found=coupons.find(c=>(c.code||'').toUpperCase()===code&&c.active);
+    if(!code){msg.textContent='Enter a coupon code.';msg.style.color='var(--muted)';return;}
+    if(!found){msg.textContent='Invalid or expired coupon.';msg.style.color='#c0392b';return;}
+    msg.textContent=`Coupon applied: ${found.code} — ${Number(found.percent)||0}% off. Mention this code when ordering.`;msg.style.color='#16834a';
+    const orderBtn=productGridEl.querySelector(`[data-action="order"][data-id="${id}"]`);
+    if(orderBtn){orderBtn.dataset.coupon=found.code;orderBtn.dataset.percent=String(Number(found.percent)||0);}
+    return;
+  }
   if(action === "wish"){ e.stopPropagation(); toggleWishlist(id); }
   else if(action === "zoom"){ e.stopPropagation(); const p=products.find(x=>x.id===id); if(p) openLightbox(productImages(p)[0]); }
   else if(action === "open"){ openProductDetail(id); }
-  else if(action === "order"){ e.stopPropagation(); orderOnWhatsapp(id); }
+  else if(action === "order"){ e.stopPropagation(); const coupon=target.dataset.coupon?{code:target.dataset.coupon,percent:Number(target.dataset.percent)||0}:null; orderOnWhatsapp(id,coupon); }
   else if(action === "download"){ e.stopPropagation(); const p=products.find(x=>x.id===id); if(p&&p.downloadLink&&/^https?:\/\//i.test(p.downloadLink)){ window.open(p.downloadLink, "_blank", "noopener,noreferrer"); } }
   else if(action === "share"){ e.stopPropagation(); shareProduct(id); }
   else if(action === "readmore"){
