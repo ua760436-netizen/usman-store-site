@@ -388,9 +388,12 @@ img{max-width:100%;display:block;}
 .gallery-thumb{position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;flex:0 0 auto;border:1px solid var(--panel-border);}
 .gallery-thumb img{width:100%;height:100%;object-fit:contain;background:var(--bg2);}
 .gallery-thumb .rm{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;border:none;}
-.pd-gallery{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;border-radius:14px;gap:0;scrollbar-width:none;}
+.pd-gallery{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;border-radius:14px;gap:0;scrollbar-width:none;overscroll-behavior-x:contain;background:#eee9df;}
 .pd-gallery::-webkit-scrollbar{display:none;}
-.pd-gallery img{width:100%;flex:0 0 100%;scroll-snap-align:start;aspect-ratio:4/3;object-fit:contain;background:var(--bg2);cursor:zoom-in;}
+.pd-slide{position:relative;isolation:isolate;width:100%;flex:0 0 100%;scroll-snap-align:start;aspect-ratio:4/3;overflow:hidden;display:grid;place-items:center;background:var(--bg2);}
+.pd-slide-bg{position:absolute;inset:-18px;width:calc(100% + 36px)!important;height:calc(100% + 36px)!important;object-fit:cover!important;filter:blur(18px) brightness(.78);opacity:.62;pointer-events:none;}
+.pd-slide-main{position:relative;z-index:1;width:100%!important;height:100%!important;object-fit:contain!important;padding:5px;cursor:zoom-in;}
+@media(max-width:640px){.pd-slide-bg{filter:blur(14px) brightness(.82);opacity:.58}.pd-slide-main{padding:3px}}
 .lightbox-overlay{
   position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:250;display:flex;align-items:center;justify-content:center;
   opacity:0;pointer-events:none;transition:opacity var(--transition);padding:20px;
@@ -1073,9 +1076,10 @@ function escapeHtml(str){
   return String(str||"").replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 }
 function fmtPrice(p){ const n = Number(p)||0; return "Rs. " + Math.round(n).toLocaleString("en-PK"); }
-function cldUrl(url, width){
+function cldUrl(url, width, quality){
   if(!url || !url.includes("/upload/")) return url;
-  return url.replace("/upload/", `/upload/q_auto,f_auto,w_${width}/`);
+  const q = quality || "auto";
+  return url.replace("/upload/", `/upload/q_${q},f_auto,w_${width}/`);
 }
 function toast(msg, type){
   type = type || "info";
@@ -1177,12 +1181,18 @@ function applySettingsToDom(){
   const pm = (settings.paymentMethods || "").trim();
   $("paymentBadge").classList.toggle("hidden", !pm);
   $("paymentMethodsText").textContent = pm.split(",").map(s=>s.trim()).filter(Boolean).join(" · ");
+  const logoImg = $("logoImg");
+  logoImg.onerror = ()=>{
+    logoImg.classList.add("hidden");
+    $("logoLetter").classList.remove("hidden");
+  };
   if(settings.logoUrl){
-    $("logoImg").src = cldUrl(settings.logoUrl, 120);
-    $("logoImg").classList.remove("hidden");
+    logoImg.src = cldUrl(settings.logoUrl, 240, "auto:best");
+    logoImg.classList.remove("hidden");
     $("logoLetter").classList.add("hidden");
   } else {
-    $("logoImg").classList.add("hidden");
+    logoImg.removeAttribute("src");
+    logoImg.classList.add("hidden");
     $("logoLetter").classList.remove("hidden");
   }
 }
@@ -1511,15 +1521,18 @@ function openProductDetail(id){
   const imgs = productImages(p);
   pdGalleryImages = imgs;
   $("pdGallery").innerHTML = imgs.length
-    ? imgs.map(u=>`<img src="${escapeHtml(cldUrl(u,900))}" alt="${escapeHtml(p.title)}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><rect width=%22200%22 height=%22200%22 fill=%22%231a1330%22/></svg>'">`).join("")
-    : `<img src="data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><rect width=%22200%22 height=%22200%22 fill=%22%231a1330%22/></svg>" alt="">`;
+    ? imgs.map(u=>{
+        const hiRes = escapeHtml(cldUrl(u,3840,"auto:best"));
+        return `<div class="pd-slide"><img class="pd-slide-bg" src="${hiRes}" alt="" aria-hidden="true" loading="lazy" decoding="async"><img class="pd-slide-main" src="${hiRes}" alt="${escapeHtml(p.title)}" loading="eager" decoding="async" onerror="this.style.opacity='.0';"></div>`;
+      }).join("")
+    : `<div class="pd-slide"><div style="color:var(--muted);font-size:13px;">Image unavailable</div></div>`;
   $("pdDots").innerHTML = imgs.length > 1 ? imgs.map((_,i)=>`<span class="${i===0?'on':''}"></span>`).join("") : "";
   const galleryEl = $("pdGallery");
   galleryEl.onscroll = debounce(()=>{
     const idx = Math.round(galleryEl.scrollLeft / galleryEl.clientWidth);
     $("pdDots").querySelectorAll("span").forEach((d,i)=>d.classList.toggle("on", i===idx));
   }, 60);
-  galleryEl.querySelectorAll("img").forEach(img=>img.addEventListener("click", ()=>openLightbox(img.src)));
+  galleryEl.querySelectorAll(".pd-slide-main").forEach(img=>img.addEventListener("click", ()=>openLightbox(img.src)));
 
   if(pdGalleryTimer){ clearInterval(pdGalleryTimer); pdGalleryTimer = null; }
   if(imgs.length > 1){
@@ -1607,30 +1620,48 @@ $("pdReviewSubmit").addEventListener("click", async ()=>{
   const stars = selectedReviewStars || Number(myRatings[currentPdProduct.id]||0);
   if(!stars){ toast("Please select a star rating first.","error"); return; }
   const reviewText = $("pdReviewText").value.trim();
+  const submitBtn = $("pdReviewSubmit");
+  if(reviewText.length > 500){ toast("Review must be 500 characters or fewer.","error"); return; }
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Submitting...";
   try{
+    const productId = currentPdProduct.id;
     const uid = getAnonId();
-    await db.collection("ratings").doc(currentPdProduct.id + "_" + uid).set({
-      productId: currentPdProduct.id, stars, review: reviewText, uid,
+    await db.collection("ratings").doc(productId + "_" + uid).set({
+      productId, stars, review: reviewText, uid,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, {merge:true});
-    myRatings[currentPdProduct.id] = stars;
-    localStorage.setItem("ahmad_myratings", JSON.stringify(myRatings));
+    myRatings[productId] = stars;
+    try{ localStorage.setItem("ahmad_myratings", JSON.stringify(myRatings)); }catch(_){}
+    selectedReviewStars = stars;
     toast("Your rating has been submitted.","success");
-  }catch(e){ console.error(e); toast("Could not submit. Check Firestore rules/connection.","error"); }
+    const fresh = await db.collection("ratings").where("productId","==",productId).get();
+    renderProductReviews(productId, fresh.docs.map(d=>({id:d.id,...d.data()})));
+  }catch(e){ console.error("Rating/review submit failed:",e); toast("Could not submit. Check Firestore permissions or connection.","error"); }
+  finally{ submitBtn.disabled = false; submitBtn.textContent = "Submit Rating & Review"; }
 });
 
 function renderProductReviews(productId, docs){
   const box = $("pdReviewsList");
   if(!box || !currentPdProduct || currentPdProduct.id !== productId) return;
-  const entries = docs.filter(r=>r.productId===productId && Number(r.stars)>=1 && Number(r.stars)<=5 && (r.review||"").trim());
+  const validRatings = docs.filter(r=>r.productId===productId && Number(r.stars)>=1 && Number(r.stars)<=5);
+  const entries = validRatings.filter(r=>(r.review||"").trim());
+  validRatings.sort((a,b)=>((b.updatedAt?.seconds||0)-(a.updatedAt?.seconds||0)));
   entries.sort((a,b)=>((b.updatedAt?.seconds||0)-(a.updatedAt?.seconds||0)));
-  if(!entries.length){ box.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:10px 0;">No written reviews yet. Be the first to share an honest review.</div>'; return; }
-  box.innerHTML = '<div style="font-size:12px;font-weight:700;margin-bottom:8px;">Customer reviews ('+entries.length+')</div>' + entries.map(r=>
-    '<div style="padding:10px;margin-bottom:8px;border:1px solid var(--panel-border);border-radius:12px;background:var(--panel);">' +
-    '<div style="color:#f5b82e;letter-spacing:2px;">'+'★'.repeat(Number(r.stars))+'<span style="color:var(--muted);">'+'☆'.repeat(5-Number(r.stars))+'</span></div>' +
-    '<div style="font-size:13px;line-height:1.5;margin-top:5px;white-space:pre-wrap;overflow-wrap:anywhere;">'+escapeHtml(r.review)+'</div>' +
-    '<div style="font-size:10px;color:var(--muted);margin-top:6px;">Customer review</div></div>'
-  ).join("");
+  const total = validRatings.length;
+  const average = total ? validRatings.reduce((sum,r)=>sum+Number(r.stars),0)/total : 0;
+  const summary = total
+    ? `<div style="padding:11px 12px;margin-bottom:12px;border:1px solid var(--panel-border);border-radius:12px;background:var(--panel);display:flex;align-items:center;justify-content:space-between;gap:10px;"><div><strong style="font-size:21px;color:#d49b2e;">${average.toFixed(1)} ★</strong><div style="font-size:11px;color:var(--muted);">Average from ${total} real rating${total===1?"":"s"}</div></div><div style="font-size:11px;color:var(--muted);text-align:right;">${entries.length} written review${entries.length===1?"":"s"}</div></div>`
+    : '<div style="font-size:12px;color:var(--muted);padding:8px 0 12px;">No ratings yet. Be the first to rate this product.</div>';
+  const list = entries.length
+    ? '<div style="font-size:12px;font-weight:700;margin-bottom:8px;">Customer reviews</div>' + entries.map(r=>
+      '<div style="padding:10px;margin-bottom:8px;border:1px solid var(--panel-border);border-radius:12px;background:var(--panel);">' +
+      '<div style="color:#d49b2e;letter-spacing:2px;">'+'★'.repeat(Number(r.stars))+'<span style="color:var(--muted);">'+'☆'.repeat(5-Number(r.stars))+'</span></div>' +
+      '<div style="font-size:13px;line-height:1.5;margin-top:5px;white-space:pre-wrap;overflow-wrap:anywhere;">'+escapeHtml(r.review)+'</div>' +
+      '<div style="font-size:10px;color:var(--muted);margin-top:6px;">Customer review</div></div>'
+    ).join("")
+    : '<div style="font-size:12px;color:var(--muted);padding:4px 0;">No written reviews yet.</div>';
+  box.innerHTML = summary + list;
 }
 
 function getAnonId(){
@@ -2345,11 +2376,13 @@ $("logoFileInput").addEventListener("change", async (e)=>{
   const file = e.target.files[0];
   if(!file) return;
   try{
+    if(!file.type || !file.type.startsWith("image/")) throw new Error("Please select an image file.");
+    if(file.size > 10 * 1024 * 1024) throw new Error("Logo image must be 10 MB or smaller.");
     toast("Uploading logo...","info");
     const url = await uploadToCloudinary(file);
     await db.collection("settings").doc("store").set({logoUrl:url},{merge:true});
-    toast("Logo updated","success");
-  }catch(err){ console.error(err); toast("Could not upload logo","error"); }
+    toast("Logo updated successfully","success");
+  }catch(err){ console.error("Logo upload failed:",err); toast(err.message || "Could not upload logo. Check Cloudinary/Firebase permissions.","error"); }
   e.target.value = "";
 });
 document.querySelectorAll("[data-generic]").forEach(btn=>{
