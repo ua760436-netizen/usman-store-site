@@ -265,7 +265,7 @@ img{max-width:100%;display:block;}
 .btn:active{transform:scale(.95);}
 .btn-whatsapp{flex:1;background:linear-gradient(135deg,#25D366,#1aa851);color:#fff;box-shadow:0 0 14px rgba(37,211,102,.35);}
 .btn-download{position:relative;isolation:isolate;flex:1 1 100%;width:100%;min-height:54px;padding:10px 18px;border:2px solid transparent;border-radius:15px;color:#eafaff;background:linear-gradient(#101827,#101827) padding-box,conic-gradient(from var(--rgb-angle,0deg),#ff3b6b,#ffb52e,#6bff8b,#36d9ff,#a56bff,#ff3bcb,#ff3b6b) border-box;box-shadow:0 0 9px #39dfff88,0 0 18px #b44dff55,inset 0 0 14px #36d9ff22;text-shadow:0 0 9px #52dfff;font-size:14px;font-weight:900;letter-spacing:1.8px;animation:rgbDownloadGlow 5s linear infinite;overflow:hidden}.btn-download::before{content:"";position:absolute;inset:-2px;z-index:-1;border-radius:inherit;background:conic-gradient(from var(--rgb-angle,0deg),#ff3b6b,#ffb52e,#6bff8b,#36d9ff,#a56bff,#ff3bcb,#ff3b6b);filter:blur(10px);opacity:.55}.btn-download .download-icon{width:25px;height:25px;filter:drop-shadow(0 0 5px #61e8ff)}@keyframes rgbDownloadGlow{to{--rgb-angle:360deg}}@property --rgb-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
-.btn-share{flex:0 0 auto;width:38px;background:var(--panel);border:1px solid var(--panel-border);color:var(--text);}
+.btn-share{flex:0 0 auto;width:auto;min-width:112px;padding:10px 16px;display:inline-flex;align-items:center;justify-content:center;gap:9px;border:1px solid transparent;border-radius:999px;color:#fff;background:linear-gradient(110deg,#087cff 0%,#5636f5 55%,#d414e8 100%);box-shadow:0 5px 18px rgba(70,75,255,.28);font-weight:800;letter-spacing:.2px;transition:transform .18s ease,filter .18s ease;}.btn-share:hover{filter:brightness(1.12);transform:translateY(-1px)}.btn-share svg{width:19px;height:19px;flex:0 0 19px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 .empty-state{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted);}
 .empty-state svg{width:56px;height:56px;opacity:.5;margin-bottom:14px;}
@@ -746,7 +746,7 @@ body{background:var(--page-bg)!important;}
     <div class="card-actions" style="margin-top:16px;">
       <button class="btn btn-whatsapp" id="pdWhatsapp">Order on WhatsApp</button>
       <button class="btn btn-download hidden" id="pdDownload" title="Download"><span>DOWNLOAD</span><svg class="download-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 18v3h16v-3"/></svg></button>
-      <button class="btn btn-share" id="pdShare" title="Share">↗</button>
+      <button class="btn btn-share" id="pdShare" title="Share this product"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.7 6.6-4.4M8.7 13.3l6.6 4.4"/></svg><span>Share</span></button>
     </div>
 
     <div style="margin-top:16px;">
@@ -1331,7 +1331,7 @@ function renderProducts(){
             : (p.deliveryType === "download" || (!p.deliveryType && p.downloadLink && !p.whatsapp))
               ? `<button class="btn btn-download" data-action="download" data-id="${p.id}"><span>DOWNLOAD</span><svg class="download-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 18v3h16v-3"/></svg></button>`
               : `<button class="btn btn-whatsapp" data-action="order" data-id="${p.id}">Order via WhatsApp</button>`}
-          <button class="btn btn-share" data-action="share" data-id="${p.id}" title="Share">↗</button>
+          <button class="btn btn-share" data-action="share" data-id="${p.id}" title="Share this product"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.7 6.6-4.4M8.7 13.3l6.6 4.4"/></svg><span>Share</span></button>
         </div>
         <div class="card-customer-tools" style="margin-top:12px;padding:12px;border:1px solid var(--panel-border);border-radius:13px;background:var(--panel);" data-card-tools="${p.id}">
           <div style="font-size:13px;font-weight:800;margin-bottom:7px;">Submit Rating &amp; Review</div>
