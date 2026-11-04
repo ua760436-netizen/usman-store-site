@@ -610,6 +610,15 @@ body{background:var(--page-bg)!important;}
 .usman-ai-note{text-align:center;font-size:9px;color:#8c859e;padding:0 8px 7px;background:#fff}
 @media(max-width:480px){.usman-ai-panel{right:10px;bottom:145px;width:calc(100vw - 20px);height:min(420px,calc(100dvh - 175px))}.usman-ai-launch{right:16px;bottom:88px}}
 
+
+/* Matching optional creator-credit label on product cards and detail view */
+.card-credit{
+  display:block; margin:8px 0 10px; padding:11px 14px 11px 17px;
+  border-left:4px solid #d99a27; border-radius:13px 7px 7px 13px;
+  background:#fff; color:#242019; font-size:17px; line-height:1.35;
+  font-weight:800; overflow-wrap:anywhere; box-shadow:0 2px 8px rgba(35,25,10,.06);
+}
+.pd-credit{margin-top:10px; font-size:17px;}
 </style>
 </head>
 <body>
@@ -740,7 +749,7 @@ body{background:var(--page-bg)!important;}
       <span style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:800;" id="pdPrice"></span>
     </div>
     <div style="margin-top:10px;color:var(--muted);font-size:13.5px;line-height:1.6" id="pdDesc"></div>
-    <div id="pdCredit" class="hidden" style="margin-top:8px;font-size:12px;color:var(--muted);font-weight:600;"></div>
+    <div id="pdCredit" class="card-credit pd-credit hidden"></div>
     <div id="pdApplyWrap" class="hidden" style="margin-top:14px;padding:14px;border:1px solid var(--panel-border);border-radius:14px;background:var(--panel);"><strong style="display:block;margin-bottom:7px;">How to Apply</strong><div id="pdApplyInstructions" style="white-space:pre-wrap;color:var(--text);font-size:13.5px;line-height:1.65;"></div></div>
 
     <div class="card-actions" style="margin-top:16px;">
@@ -1322,7 +1331,7 @@ function renderProducts(){
         <div class="card-title" data-action="open" data-id="${p.id}">${escapeHtml(p.title)}</div>
         <div class="card-price ${(p.deliveryType === "download" || p.deliveryType === "apply") ? "hidden" : ""}">${(p.deliveryType === "download" || p.deliveryType === "apply") ? "" : fmtPrice(p.price)}</div>
         <div class="card-rating" id="cardRating-${p.id}">${rating.count? ('★ '+rating.avg.toFixed(1)+' ('+rating.count+')') : 'No ratings yet'}</div>
-        ${p.credit ? `<div class="card-credit" style="margin:7px 0 10px;padding:8px 10px;border-left:3px solid var(--accent,#d49b2e);background:var(--panel);border-radius:8px;font-size:13px;font-weight:700;overflow-wrap:anywhere;">Credit: ${escapeHtml(p.credit)}</div>` : ''}
+        ${p.credit ? `<div class="card-credit">Credit: ${escapeHtml(p.credit)}</div>` : ''}
         ${hasDesc ? `<div class="card-desc" data-full="${escapeHtml(p.description)}"><span class="desc-short">${escapeHtml(p.description.slice(0,60))}${p.description.length>60?'…':''}</span></div>
         ${p.description.length>60?`<button class="read-more-btn" data-action="readmore" data-id="${p.id}">Read More</button>`:''}` : ''}
         <div class="card-actions">
