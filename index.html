@@ -1999,7 +1999,8 @@ function openAdminShell(){
 function renderPendingApprovals(){
   const wrap=$("pendingApprovalsWrap"); if(!wrap) return;
   const pending=products.filter(p=>p.status==="pending");
-  wrap.innerHTML = pending.length ? pending.map(p=>`<div class="admin-row" style="align-items:flex-start;gap:12px;"><img src="${escapeHtml((p.imageUrls&&p.imageUrls[0])||p.imageUrl||"")}" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:10px;background:#eee;"><div class="admin-row-info"><div class="admin-row-title">${escapeHtml(p.title||"Untitled")}</div><div class="admin-row-sub">${escapeHtml(p.contributorEmail||"Contributor")} · ${escapeHtml((categories.find(c=>c.id===p.categoryId)||{}).name||"Category")}</div><div style="font-size:12px;margin-top:5px;">${escapeHtml(p.description||"")}</div><a href="${escapeHtml(p.downloadLink||"#")}" target="_blank" rel="noopener" style="font-size:11px;color:#2764cc;">Preview download link</a><div class="admin-row-actions" style="margin-top:8px;"><button class="btn-primary" data-approval="approve" data-id="${p.id}" style="width:auto;padding:8px 12px;">Approve</button><button class="btn-secondary" data-approval="reject" data-id="${p.id}" style="width:auto;padding:8px 12px;">Reject</button></div></div></div>`).join("") : '<div style="color:var(--muted);font-size:13px;">No pending submissions.</div>';
+  wrap.innerHTML = pending.length ? pending.map(p=>`<div class="admin-row" style="align-items:flex-start;gap:12px;"><img src="${escapeHtml((p.imageUrls&&p.imageUrls[0])||p.imageUrl||"")}" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:10px;background:#eee;"><div class="admin-row-info"><div class="admin-row-title">${escapeHtml(p.title||"Untitled")}</div><div class="admin-row-sub">${escapeHtml(p.contributorEmail||"Contributor")} · ${escapeHtml((categories.find(c=>c.id===p.categoryId)||{}).name||"Category")}</div><div style="font-size:12px;margin-top:5px;">${escapeHtml(p.description||"")}</div><a href="${escapeHtml(p.downloadLink||"#")}" target="_blank" rel="noopener" style="font-size:11px;color:#2764cc;">Preview download link</a><div class="admin-row-actions" style="margin-top:8px;"><button class="btn-primary" data-approval="approve" data-id="${p.id}" style="width:auto;padding:8px 12px;">Approve</button><button class="btn-secondary" data-approval="reject" data-id="${p.id}" style="width:auto;padding:8px 12px;">Reject</button><button class="icon-sm-btn danger" type="button" data-pending-del="${p.id}" aria-label="Delete" title="Delete">🗑</button></div></div></div>`).join("") : '<div style="color:var(--muted);font-size:13px;">No pending submissions.</div>';
+  wrap.querySelectorAll("[data-pending-del]").forEach(b=>b.addEventListener("click",()=>deleteOwnProduct(b.dataset.pendingDel)));
   wrap.querySelectorAll("[data-approval]").forEach(b=>b.addEventListener("click",async()=>{
     const id=b.dataset.id, action=b.dataset.approval; b.disabled=true;
     try{
@@ -2051,10 +2052,24 @@ function openContributorShell(){
   const sel=$("contribCategory");sel.innerHTML='<option value="">Select category</option>'+categories.map(c=>`<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join("");
   renderContributorDashboard();
 }
+function deleteOwnProduct(id){
+  const p=products.find(x=>x.id===id);
+  if(!p) return;
+  if(currentRole==="contributor" && p.createdBy!==auth.currentUser?.uid){ toast("Aap sirf apna product delete kar sakte hain","error"); return; }
+  openConfirm(`Delete "${p.title||"this product"}"?`,"Yeh product hamesha ke liye delete ho jayega. Is action ko undo nahi kiya ja sakta.",async()=>{
+    try{ await db.collection("products").doc(id).delete(); toast("Product deleted","success"); }
+    catch(e){
+      console.error(e);
+      toast(e.code==="permission-denied"?"Delete Firestore rules ne block kiya. Rules update karein.":"Could not delete product","error");
+      throw e;
+    }
+  });
+}
 function renderContributorDashboard(){
   const mine=products.filter(p=>p.createdBy===auth.currentUser?.uid);
   $("contribTotal").textContent=mine.length;$("contribPending").textContent=mine.filter(p=>p.status==="pending").length;$("contribApproved").textContent=mine.filter(p=>p.status==="approved").length;
-  $("contribSubmissionsList").innerHTML=mine.length?mine.slice().sort((a,b)=>((b.createdAt?.seconds)||0)-((a.createdAt?.seconds)||0)).map(p=>`<div class="admin-row"><div class="admin-row-info"><div class="admin-row-title">${escapeHtml(p.title||"Untitled")}</div><div class="admin-row-sub">${escapeHtml((categories.find(c=>c.id===p.categoryId)||{}).name||"Category")} · ${p.status==="approved"?"Approved / Published":p.status==="rejected"?"Rejected":"Pending Admin Approval"}</div></div></div>`).join(""):'<div style="color:var(--muted);font-size:13px;">Abhi koi submission nahi. Upar form se free product submit karein.</div>';
+  $("contribSubmissionsList").innerHTML=mine.length?mine.slice().sort((a,b)=>((b.createdAt?.seconds)||0)-((a.createdAt?.seconds)||0)).map(p=>`<div class="admin-row"><div class="admin-row-info"><div class="admin-row-title">${escapeHtml(p.title||"Untitled")}</div><div class="admin-row-sub">${escapeHtml((categories.find(c=>c.id===p.categoryId)||{}).name||"Category")} · ${p.status==="approved"?"Approved / Published":p.status==="rejected"?"Rejected":"Pending Admin Approval"}</div></div><div class="admin-row-actions"><button class="icon-sm-btn danger" type="button" data-contrib-del="${p.id}" aria-label="Delete product" title="Delete">🗑</button></div></div>`).join(""):'<div style="color:var(--muted);font-size:13px;">Abhi koi submission nahi. Upar form se free product submit karein.</div>';
+  $("contribSubmissionsList").querySelectorAll("[data-contrib-del]").forEach(b=>b.addEventListener("click",()=>deleteOwnProduct(b.dataset.contribDel)));
   const sel=$("contribCategory"), old=sel.value;sel.innerHTML='<option value="">Select category</option>'+categories.map(c=>`<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join("");if(categories.some(c=>c.id===old))sel.value=old;
 }
 let contributorImageUrl="";
