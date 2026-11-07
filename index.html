@@ -621,7 +621,12 @@ body{background:var(--page-bg)!important;}
   background:#fff; color:#242019; font-size:17px; line-height:1.35;
   font-weight:800; overflow-wrap:anywhere; box-shadow:0 2px 8px rgba(35,25,10,.06);
 }
-.pd-credit{margin-top:10px; font-size:17px;}
+.card-credit{margin:6px 0 8px !important; padding:6px 10px 6px 12px !important; font-size:12.5px !important; font-weight:700 !important; border-left-width:3px !important; border-radius:10px 6px 6px 10px !important;}
+.pd-credit{margin-top:10px; font-size:12.5px;}
+.wa-channel-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin:2px 0 8px;padding:8px 14px;border-radius:999px;background:linear-gradient(135deg,#25d366,#128c4a);color:#fff !important;font-size:12.5px;font-weight:800;text-decoration:none;box-shadow:0 4px 12px rgba(37,211,102,.35);max-width:100%;}
+.wa-channel-btn svg{width:18px;height:18px;flex:0 0 18px;fill:#fff;}
+.wa-channel-btn:active{transform:scale(.97);}
+.pd-wa-channel{margin-top:8px;}
 </style>
 </head>
 <body>
@@ -753,6 +758,7 @@ body{background:var(--page-bg)!important;}
     </div>
     <div style="margin-top:10px;color:var(--muted);font-size:13.5px;line-height:1.6" id="pdDesc"></div>
     <div id="pdCredit" class="card-credit pd-credit hidden"></div>
+    <div id="pdWaChannel" class="pd-wa-channel"></div>
     <div id="pdApplyWrap" class="hidden" style="margin-top:14px;padding:14px;border:1px solid var(--panel-border);border-radius:14px;background:var(--panel);"><strong style="display:block;margin-bottom:7px;">How to Apply</strong><div id="pdApplyInstructions" style="white-space:pre-wrap;color:var(--text);font-size:13.5px;line-height:1.65;"></div></div>
 
     <div class="card-actions" style="margin-top:16px;">
@@ -831,6 +837,7 @@ body{background:var(--page-bg)!important;}
         <div class="field"><label>Description (optional)</label><textarea id="contribDescription" maxlength="1000" placeholder="Product details"></textarea></div>
         <div class="field"><label>Download Link *</label><input id="contribDownload" type="url" placeholder="https://..."></div>
         <div class="field"><label>Credit (optional)</label><input id="contribCredit" maxlength="80" placeholder="Creator credit"></div>
+        <div class="field"><label>Your WhatsApp Channel Link (optional)</label><input id="contribWaChannel" type="url" maxlength="200" placeholder="https://whatsapp.com/channel/..."><div class="field-hint">Link dene par product ke saath "Visit My WhatsApp Channel" button dikhega, aap ke channel ki promotion hogi.</div></div>
         <div class="field"><label>Product Image *</label><input id="contribImage" type="file" accept="image/jpeg,image/png,image/webp"><div class="upload-progress hidden" id="contribUploadProgressWrap"><div class="upload-progress-bar" id="contribUploadProgressBar"></div></div><img id="contribImagePreview" class="img-preview hidden" alt="Preview"></div>
         <button class="btn-primary" id="contribSubmitBtn">Submit for Admin Approval</button>
         <div class="error-text hidden" id="contribError"></div>
@@ -861,6 +868,7 @@ body{background:var(--page-bg)!important;}
     <div class="field" id="pfWhatsappWrap"><label>WhatsApp Number *</label><input id="pfWhatsapp" type="tel" inputmode="numeric" placeholder="e.g. 923001234567 (with country code)"></div>
     <div class="field"><label>Description (optional)</label><textarea id="pfDescription" placeholder="Tell customers more about this product"></textarea></div>
     <div class="field"><label>Credit / Creator Name (optional)</label><input id="pfCredit" type="text" maxlength="80" placeholder="e.g. Created by Ahmed"></div>
+    <div class="field"><label>WhatsApp Channel Link (optional)</label><input id="pfWaChannel" type="url" maxlength="200" placeholder="https://whatsapp.com/channel/..."></div>
     <div class="field hidden" id="pfDownloadWrap"><label>Download Link *</label><input id="pfDownload" type="url" placeholder="https://..."></div>
     <div class="field hidden" id="pfApplyWrap"><label>Apply Instructions *</label><textarea id="pfApplyInstructions" rows="4" placeholder="Explain where and how customers should apply for this product..."></textarea><small style="display:block;color:var(--muted);margin-top:6px;">These instructions will be shown to customers and Usman AI.</small></div>
     <div class="field">
@@ -1137,6 +1145,22 @@ function escapeHtml(str){
   return String(str||"").replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 }
 function fmtPrice(p){ const n = Number(p)||0; return "Rs. " + Math.round(n).toLocaleString("en-PK"); }
+const WA_LOGO_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm0 18.15h-.01a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.22-8.23 8.22zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.23.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.14-1.18-.06-.1-.23-.17-.48-.29z"/></svg>';
+function cleanWaChannel(raw){
+  const v=String(raw||"").trim();
+  if(!v) return "";
+  try{
+    const u=new URL(v);
+    const h=u.hostname.toLowerCase();
+    if(u.protocol==="https:" && (h==="whatsapp.com"||h==="www.whatsapp.com"||h==="wa.me"||h==="chat.whatsapp.com")) return u.href;
+  }catch(_){}
+  return null;
+}
+function waChannelBtnHtml(p, extraClass){
+  const link=cleanWaChannel(p&&p.whatsappChannel);
+  if(!link) return "";
+  return `<a class="wa-channel-btn ${extraClass||""}" href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">${WA_LOGO_SVG}<span>Visit My WhatsApp Channel</span></a>`;
+}
 function cldUrl(url, width, quality){
   if(!url || !url.includes("/upload/")) return url;
   const q = quality || "auto";
@@ -1399,6 +1423,7 @@ function renderProducts(){
         <div class="card-price ${(p.deliveryType === "download" || p.deliveryType === "apply") ? "hidden" : ""}">${(p.deliveryType === "download" || p.deliveryType === "apply") ? "" : fmtPrice(p.price)}</div>
         <div class="card-rating" id="cardRating-${p.id}">${rating.count? ('★ '+rating.avg.toFixed(1)+' ('+rating.count+')') : 'No ratings yet'}</div>
         ${p.credit ? `<div class="card-credit">Credit: ${escapeHtml(p.credit)}</div>` : ''}
+        ${waChannelBtnHtml(p)}
         ${hasDesc ? `<div class="card-desc" data-full="${escapeHtml(p.description)}"><span class="desc-short">${escapeHtml(p.description.slice(0,60))}${p.description.length>60?'…':''}</span></div>
         ${p.description.length>60?`<button class="read-more-btn" data-action="readmore" data-id="${p.id}">Read More</button>`:''}` : ''}
         <div class="card-actions">
@@ -1559,14 +1584,53 @@ function orderOnWhatsapp(id, coupon){
   window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, "_blank");
 }
 
+function toBoldUnicode(str){
+  return Array.from(String(str||"")).map(ch=>{
+    const c=ch.codePointAt(0);
+    if(c>=65&&c<=90) return String.fromCodePoint(0x1D5D4+c-65);
+    if(c>=97&&c<=122) return String.fromCodePoint(0x1D5EE+c-97);
+    if(c>=48&&c<=57) return String.fromCodePoint(0x1D7EC+c-48);
+    return ch;
+  }).join("");
+}
+function buildShareMessage(p, url){
+  const store = settings.storeName || "Usman Store";
+  const cat = (categories.find(c=>c.id===p.categoryId)||{}).name || "";
+  const isFree = !(Number(p.price) > 0);
+  const desc = String(p.description||"").replace(/\s+/g," ").trim();
+  const shortDesc = desc.length > 110 ? desc.slice(0,107).trim() + "..." : desc;
+  const line = "━━━━━━━━━━━━━━━━━━";
+  const out = [
+    "🔥 " + toBoldUnicode("NEW DROP • DOWNLOAD NOW") + " 🔥",
+    line,
+    "",
+    "🎮 " + toBoldUnicode(String(p.title||"").toUpperCase()),
+    ""
+  ];
+  if(shortDesc) out.push("📝 " + shortDesc, "");
+  if(cat) out.push("📂 " + toBoldUnicode("CATEGORY") + ": " + cat);
+  out.push(isFree ? "🎁 " + toBoldUnicode("PRICE") + ": " + toBoldUnicode("100% FREE") + " 💯" : "💰 " + toBoldUnicode("PRICE") + ": " + fmtPrice(p.price));
+  out.push("⚡ " + toBoldUnicode("QUALITY") + ": Premium • Ready to Use");
+  out.push("");
+  out.push("👇 " + toBoldUnicode("GET IT HERE") + " 👇");
+  out.push("🌐 " + url);
+  out.push("");
+  if(p.credit) out.push("👑 Credit: " + p.credit, "");
+  const waLink = cleanWaChannel(p.whatsappChannel);
+  if(waLink) out.push("🟢 " + toBoldUnicode("VISIT MY WHATSAPP CHANNEL") + " 💬", "👉 " + waLink, "");
+  out.push(line);
+  out.push("🚀 " + toBoldUnicode("EXPLORE MORE AT " + store.toUpperCase()) + " ✨");
+  out.push("❤️ Like • Share • Support Us ❤️");
+  return out.join("\n");
+}
 async function shareProduct(id){
   const p = products.find(x=>x.id===id);
   if(!p) return;
-  const url = location.href.split("?")[0] + "?product=" + encodeURIComponent(id);
-  const shareData = { title:p.title, text:`Check out ${p.title} on ${settings.storeName||"Usman Store"}`, url };
+  const url = location.href.split("?")[0].split("#")[0] + "?product=" + encodeURIComponent(id);
+  const message = buildShareMessage(p, url);
   if(navigator.share){
     try {
-      await navigator.share(shareData);
+      await navigator.share({ title:p.title, text:message });
       return;
     } catch(err) {
       // If the user cancels the native share sheet, do not show an error.
@@ -1575,10 +1639,10 @@ async function shareProduct(id){
   }
   try {
     if(navigator.clipboard && window.isSecureContext){
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(message);
     } else {
       const field = document.createElement("textarea");
-      field.value = url;
+      field.value = message;
       field.setAttribute("readonly", "");
       field.style.position = "fixed";
       field.style.opacity = "0";
@@ -1588,9 +1652,9 @@ async function shareProduct(id){
       field.remove();
       if(!copied) throw new Error("Copy command failed");
     }
-    toast("Product link copied!","success");
+    toast("Share message copied! Ab paste kar dein 🔥","success");
   } catch(err) {
-    toast("Could not copy link. Please copy this URL: " + url,"error");
+    toast("Could not copy. Please copy this URL: " + url,"error");
   }
 }
 
@@ -1702,6 +1766,7 @@ function openProductDetail(id){
   const creditText = (p.credit || "").trim();
   $("pdCredit").textContent = creditText ? `Credit: ${creditText}` : "";
   $("pdCredit").classList.toggle("hidden", !creditText);
+  $("pdWaChannel").innerHTML = waChannelBtnHtml(p);
   $("pdApplyWrap").classList.toggle("hidden", !usesApply);
   $("pdApplyInstructions").textContent = usesApply ? (p.applyInstructions || "Apply instructions have not been added yet.") : "";
   $("pdDownload").classList.toggle("hidden", !usesDownload || !p.downloadLink);
@@ -2083,14 +2148,18 @@ $("contribImage").addEventListener("change",async e=>{
 });
 $("contribSubmitBtn").addEventListener("click",async()=>{
   const title=$("contribTitle").value.trim(),categoryId=$("contribCategory").value,description=$("contribDescription").value.trim(),downloadLink=$("contribDownload").value.trim(),credit=$("contribCredit").value.trim().slice(0,80);
+  const waChannel=cleanWaChannel($("contribWaChannel").value);
   const err=$("contribError");err.classList.add("hidden");
+  if(waChannel===null){err.textContent="WhatsApp channel link sahi nahi hai. https://whatsapp.com/channel/... wala link dalein.";err.classList.remove("hidden");return;}
   let valid=false;try{const u=new URL(downloadLink);valid=(u.protocol==="https:"||u.protocol==="http:")&&!!u.hostname;}catch(_){}
   if(!title||!categoryId||!valid||!contributorImageUrl){err.textContent="Title, category, valid download link aur product image zaroori hain.";err.classList.remove("hidden");return;}
   const btn=$("contribSubmitBtn");btn.disabled=true;btn.textContent="Submitting...";
   try{
     const user=auth.currentUser;if(currentRole!=="contributor"||!user||!currentContributor?.active)throw new Error("Contributor session active nahi hai. Dobara login karein.");
-    await db.collection("products").add({title,categoryId,description,credit,downloadLink,imageUrls:[contributorImageUrl],imageUrl:contributorImageUrl,deliveryType:"download",status:"pending",createdBy:user.uid,contributorEmail:user.email,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-    $("contribTitle").value="";$("contribDescription").value="";$("contribDownload").value="";$("contribCredit").value="";$("contribImage").value="";$("contribImagePreview").classList.add("hidden");contributorImageUrl="";
+    const newProduct={title,categoryId,description,credit,downloadLink,imageUrls:[contributorImageUrl],imageUrl:contributorImageUrl,deliveryType:"download",status:"pending",createdBy:user.uid,contributorEmail:user.email,createdAt:firebase.firestore.FieldValue.serverTimestamp()};
+    if(waChannel) newProduct.whatsappChannel=waChannel;
+    await db.collection("products").add(newProduct);
+    $("contribTitle").value="";$("contribDescription").value="";$("contribDownload").value="";$("contribCredit").value="";$("contribWaChannel").value="";$("contribImage").value="";$("contribImagePreview").classList.add("hidden");contributorImageUrl="";
     toast("Submitted! Admin approval ke baad public hoga.","success");
   }catch(e){console.error(e);err.textContent=e.code==="permission-denied"?"Submission blocked by Firestore security rules. Rules publish karne ke baad retry karein.":(e.message||"Submission failed.");err.classList.remove("hidden");}
   finally{btn.disabled=false;btn.textContent="Submit for Admin Approval";}
@@ -2504,6 +2573,7 @@ function openProductForm(id){
   $("pfWhatsapp").value = p ? (p.whatsapp||"") : "";
   $("pfDescription").value = p ? (p.description||"") : "";
   $("pfCredit").value = p ? (p.credit||"") : "";
+  $("pfWaChannel").value = p ? (p.whatsappChannel||"") : "";
   $("pfDownload").value = p ? (p.downloadLink||"") : "";
   $("pfApplyInstructions").value = p ? (p.applyInstructions||"") : "";
   updateProductDeliveryFields();
@@ -2591,6 +2661,8 @@ $("pfSaveBtn").addEventListener("click", async ()=>{
   const whatsapp = $("pfWhatsapp").value.trim();
   const description = $("pfDescription").value.trim();
   const credit = $("pfCredit").value.trim().slice(0,80);
+  const whatsappChannel = cleanWaChannel($("pfWaChannel").value);
+  if(whatsappChannel === null){ toast("WhatsApp channel link sahi nahi hai (https://whatsapp.com/channel/...)","error"); return; }
   const downloadLink = $("pfDownload").value.trim();
   const applyInstructions = $("pfApplyInstructions").value.trim();
   let validDownload = false;
@@ -2615,7 +2687,7 @@ $("pfSaveBtn").addEventListener("click", async ()=>{
   }
   $("pfError").classList.add("hidden");
   $("pfSaveBtn").disabled = true;
-  const payload = { title, categoryId, price: deliveryType === "whatsapp" ? price : null, deliveryType, whatsapp: deliveryType === "whatsapp" ? whatsapp : "", description, credit, downloadLink: deliveryType === "download" ? downloadLink : "", applyInstructions: deliveryType === "apply" ? applyInstructions : "", imageUrls: pendingImageUrls.slice(), imageUrl: pendingImageUrls[0] };
+  const payload = { title, categoryId, price: deliveryType === "whatsapp" ? price : null, deliveryType, whatsapp: deliveryType === "whatsapp" ? whatsapp : "", description, credit, whatsappChannel: whatsappChannel||"", downloadLink: deliveryType === "download" ? downloadLink : "", applyInstructions: deliveryType === "apply" ? applyInstructions : "", imageUrls: pendingImageUrls.slice(), imageUrl: pendingImageUrls[0] };
   try{
     if(editingProductId){
       await db.collection("products").doc(editingProductId).update(payload);
