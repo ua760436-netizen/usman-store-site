@@ -786,13 +786,55 @@ body{background:var(--page-bg)!important;}
 <!-- ============ ADMIN LOGIN MODAL ============ -->
 <div class="overlay" id="adminLoginOverlay">
   <div class="modal">
-    <div class="modal-head"><h3>Admin Login</h3><button class="modal-close" data-close="adminLoginOverlay">✕</button></div>
-    <div class="field"><label>Email</label><input id="adminEmail" type="email" placeholder="admin@ahmadstore.com" autocomplete="username"></div>
+    <div class="modal-head"><h3>Admin / Contributor Login</h3><button class="modal-close" data-close="adminLoginOverlay">✕</button></div>
+    <div class="field"><label>Email</label><input id="adminEmail" type="email" placeholder="Authorized Gmail only" autocomplete="username"></div>
     <div class="field"><label>Password</label><input id="adminPassword" type="password" placeholder="••••••••" autocomplete="current-password"></div>
     <button class="btn-primary" id="adminLoginBtn">Login</button>
     <button class="btn-secondary" data-close="adminLoginOverlay">Cancel</button>
     <div class="error-text hidden" id="adminLoginError"></div>
   </div>
+</div>
+
+<!-- ============ CREATE CONTRIBUTOR ACCOUNT ============ -->
+<div class="overlay" id="contributorCreateOverlay">
+  <div class="modal">
+    <div class="modal-head"><h3>Create Contributor Account</h3><button class="modal-close" data-close="contributorCreateOverlay">✕</button></div>
+    <div class="field"><label>Contributor Gmail *</label><input id="contribEmail" type="email" autocomplete="off" placeholder="contributor@gmail.com"></div>
+    <div class="field"><label>Contributor Name *</label><input id="contribName" type="text" maxlength="60" placeholder="Name"></div>
+    <div class="field"><label>Temporary Password *</label><input id="contribPassword" type="password" minlength="6" autocomplete="new-password" placeholder="At least 6 characters"></div>
+    <small style="display:block;color:var(--muted);line-height:1.5;margin:-4px 0 12px;">Password Firebase Authentication mein save hoga. Store HTML mein password save nahi hota. Account details contributor ko privately dein.</small>
+    <button class="btn-primary" id="createContributorBtn">Create Account</button>
+    <div class="error-text hidden" id="contribCreateError"></div>
+  </div>
+</div>
+
+<!-- ============ CONTRIBUTOR DASHBOARD ============ -->
+<div class="admin-shell" id="contributorShell">
+  <aside class="admin-sidebar" style="display:flex;flex-direction:column;gap:10px;padding:20px;">
+    <h4>USMAN STORE CONTRIBUTOR</h4>
+    <div style="font-size:12px;color:var(--muted);line-height:1.5;">Sirf free download products submit kar sakte hain. Har upload Admin approval ke baad public hoga.</div>
+    <button class="admin-nav-item active" type="button" id="contribNewBtn">＋ Submit Product</button>
+    <button class="admin-nav-item" type="button" id="contribRefreshBtn">↻ My Submissions</button>
+    <button class="admin-nav-item logout" type="button" id="contribLogoutBtn">🚪 Logout</button>
+  </aside>
+  <main class="admin-main">
+    <div class="admin-topbar"><div class="admin-title">Contributor Dashboard</div></div>
+    <div class="admin-panel active" style="display:block!important;">
+      <div class="stat-grid"><div class="mini-stat glass"><div class="n" id="contribTotal">0</div><div class="l">My Submissions</div></div><div class="mini-stat glass"><div class="n" id="contribPending">0</div><div class="l">Pending</div></div><div class="mini-stat glass"><div class="n" id="contribApproved">0</div><div class="l">Approved</div></div></div>
+      <div class="admin-card glass" style="margin:14px;">
+        <h3 style="margin-top:0;">Submit Free Product</h3>
+        <div class="field"><label>Product Title *</label><input id="contribTitle" maxlength="120" placeholder="Product title"></div>
+        <div class="field"><label>Category *</label><select id="contribCategory"><option value="">Select category</option></select></div>
+        <div class="field"><label>Description (optional)</label><textarea id="contribDescription" maxlength="1000" placeholder="Product details"></textarea></div>
+        <div class="field"><label>Download Link *</label><input id="contribDownload" type="url" placeholder="https://..."></div>
+        <div class="field"><label>Credit (optional)</label><input id="contribCredit" maxlength="80" placeholder="Creator credit"></div>
+        <div class="field"><label>Product Image *</label><input id="contribImage" type="file" accept="image/jpeg,image/png,image/webp"><div class="upload-progress hidden" id="contribUploadProgressWrap"><div class="upload-progress-bar" id="contribUploadProgressBar"></div></div><img id="contribImagePreview" class="img-preview hidden" alt="Preview"></div>
+        <button class="btn-primary" id="contribSubmitBtn">Submit for Admin Approval</button>
+        <div class="error-text hidden" id="contribError"></div>
+      </div>
+      <div class="admin-card glass" style="margin:14px;"><h3 style="margin-top:0;">My Submissions &amp; Status</h3><div id="contribSubmissionsList">Loading...</div></div>
+    </div>
+  </main>
 </div>
 
 <!-- ============ CONFIRM MODAL ============ -->
@@ -888,6 +930,8 @@ body{background:var(--page-bg)!important;}
     <h4>USMAN STORE ADMIN</h4>
     <button class="admin-nav-item active" data-panel="dashboard">📊 Dashboard</button>
     <button class="admin-nav-item" data-panel="products">🛒 Products</button>
+    <button class="admin-nav-item" data-panel="approvals">⏳ Pending Approval</button>
+    <button class="admin-nav-item" data-panel="contributors">👥 Contributors</button>
     <button class="admin-nav-item" data-panel="categories">🏷️ Categories</button>
     <button class="admin-nav-item" data-panel="coupons">🎟️ Coupons</button>
     <button class="admin-nav-item" data-panel="banners">🖼️ Banners</button>
@@ -923,6 +967,8 @@ body{background:var(--page-bg)!important;}
     <div class="admin-panel" id="panel-products">
       <div class="admin-card glass" id="productsListWrap"></div>
     </div>
+    <div class="admin-panel" id="panel-approvals"><div class="admin-card glass" id="pendingApprovalsWrap"></div></div>
+    <div class="admin-panel" id="panel-contributors"><div class="admin-card glass" id="contributorsListWrap"></div></div>
 
     <div class="admin-panel" id="panel-categories">
       <div class="admin-card glass" id="categoriesListWrap"></div>
@@ -1052,6 +1098,11 @@ let activeCategory = "all";
 let activeSort = "newest";
 let searchQuery = "";
 let isAdmin = false;
+let currentRole = "visitor";
+let currentContributor = null;
+let productListenerUnsub = null;
+let contributorListenerUnsub = null;
+let contributorProvisioningApp = null;
 let editingProductId = null;
 let editingCategoryId = null;
 let currentPdProduct = null;
@@ -1127,16 +1178,10 @@ function listenCollections(){
     renderProductCategorySelect();
     updateStats();
     if(isAdmin){ renderAdminCategories(); renderDashboard(); renderProductCategorySelect(); }
+    if(currentRole === "contributor") renderContributorDashboard();
   }, err=>{ console.error(err); toast("Could not load categories","error"); });
 
-  db.collection("products").onSnapshot(snap=>{
-    products = snap.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b)=>((b.createdAt&&b.createdAt.seconds)||0)-((a.createdAt&&a.createdAt.seconds)||0));
-    $("loadingState") && $("loadingState").remove();
-    renderProducts();
-    renderRecentlyViewed();
-    updateStats();
-    if(isAdmin){ renderAdminProducts(); renderDashboard(); }
-  }, err=>{ console.error(err); toast("Could not load products","error"); });
+  listenProductsForCurrentRole();
 
   db.collection("settings").doc("store").onSnapshot(snap=>{
     if(snap.exists) settings = Object.assign(settings, snap.data());
@@ -1174,6 +1219,25 @@ function listenCollections(){
     renderBanners();
     if(isAdmin){ renderAdminBanners(); renderDashboard(); }
   }, err=>console.error(err));
+}
+
+function listenProductsForCurrentRole(){
+  if(productListenerUnsub){ productListenerUnsub(); productListenerUnsub=null; }
+  let query = db.collection("products");
+  if(currentRole === "admin"){
+    // Admin can review all submissions and legacy products.
+  } else if(currentRole === "contributor" && auth.currentUser){
+    query = query.where("createdBy", "==", auth.currentUser.uid);
+  } else {
+    query = query.where("status", "==", "approved");
+  }
+  productListenerUnsub = query.onSnapshot(snap=>{
+    products = snap.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b)=>((b.createdAt&&b.createdAt.seconds)||0)-((a.createdAt&&a.createdAt.seconds)||0));
+    $("loadingState") && $("loadingState").remove();
+    renderProducts(); renderRecentlyViewed(); updateStats();
+    if(isAdmin){ renderAdminProducts(); renderDashboard(); renderPendingApprovals(); }
+    if(currentRole === "contributor") renderContributorDashboard();
+  }, err=>{ console.error("Products listener:",err); toast("Could not load products. Check Firestore rules.","error"); });
 }
 
 function applySettingsToDom(){
@@ -1282,7 +1346,7 @@ if(maxPriceFilterEl){
    8. PRODUCT GRID (public)
 --------------------------------------------------------------- */
 function getFilteredSortedProducts(){
-  let list = products.slice();
+  let list = products.filter(p=>p.status === "approved" || currentRole === "admin");
   const maxBudget = Number($("maxPriceFilter")?.value || 0);
   if(maxBudget > 0) list = list.filter(p => p.deliveryType === "download" || Number(p.price || 0) <= maxBudget);
   if(activeCategory !== "all") list = list.filter(p=>p.categoryId === activeCategory);
@@ -1492,14 +1556,38 @@ function orderOnWhatsapp(id, coupon){
   window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, "_blank");
 }
 
-function shareProduct(id){
+async function shareProduct(id){
   const p = products.find(x=>x.id===id);
   if(!p) return;
-  const url = location.href.split("?")[0] + "?product=" + id;
+  const url = location.href.split("?")[0] + "?product=" + encodeURIComponent(id);
+  const shareData = { title:p.title, text:`Check out ${p.title} on ${settings.storeName||"Usman Store"}`, url };
   if(navigator.share){
-    navigator.share({ title:p.title, text:`Check out ${p.title} on ${settings.storeName||"Usman Store"}`, url }).catch(()=>{});
-  } else {
-    navigator.clipboard.writeText(url).then(()=>toast("Product link copied!","success")).catch(()=>toast("Could not copy link","error"));
+    try {
+      await navigator.share(shareData);
+      return;
+    } catch(err) {
+      // If the user cancels the native share sheet, do not show an error.
+      if(err && err.name === "AbortError") return;
+    }
+  }
+  try {
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(url);
+    } else {
+      const field = document.createElement("textarea");
+      field.value = url;
+      field.setAttribute("readonly", "");
+      field.style.position = "fixed";
+      field.style.opacity = "0";
+      document.body.appendChild(field);
+      field.select();
+      const copied = document.execCommand("copy");
+      field.remove();
+      if(!copied) throw new Error("Copy command failed");
+    }
+    toast("Product link copied!","success");
+  } catch(err) {
+    toast("Could not copy link. Please copy this URL: " + url,"error");
   }
 }
 
@@ -1807,50 +1895,84 @@ document.addEventListener("visibilitychange", ()=>{
    ADMIN AREA
    ========================================================================== */
 
-/* ---- 13. Admin login (Firebase Auth email/password) ---- */
+/* ---- 13. Authorized Admin / Contributor login ---- */
 $("adminLoginBtn").addEventListener("click", async ()=>{
-  const email = $("adminEmail").value.trim();
+  const email = $("adminEmail").value.trim().toLowerCase();
   const pass = $("adminPassword").value;
   $("adminLoginError").classList.add("hidden");
-  if(!email || !pass){ showAdminLoginError("Please enter email and password."); return; }
+  if(!email || !pass){ showAdminLoginError("Gmail aur password enter karein."); return; }
   $("adminLoginBtn").disabled = true;
   $("adminLoginBtn").innerHTML = '<div class="spinner" style="display:inline-block"></div>';
   try{
     await auth.signInWithEmailAndPassword(email, pass);
-    closeOverlay("adminLoginOverlay");
-    $("adminEmail").value = ""; $("adminPassword").value = "";
-    toast("Welcome back, Admin!","success");
+    // Auth role is checked in onAuthStateChanged. Unapproved accounts are signed out there.
   }catch(e){
-    console.error("Firebase email/password login failed:", e);
+    console.error("Firebase login failed:", e);
     const code = e && e.code ? e.code : "unknown";
     const friendly = code.includes("invalid-credential") || code.includes("wrong-password") || code.includes("user-not-found")
       ? "Email ya password ghalat hai."
-      : code.includes("operation-not-allowed")
-        ? "Firebase Console mein Email/Password sign-in enable karein."
-        : code.includes("network")
-          ? "Internet connection check karein."
-          : `${code}: ${(e && e.message) ? e.message : "Login failed."}`;
+      : code.includes("operation-not-allowed") ? "Firebase mein Email/Password sign-in enable karein."
+      : code.includes("network") ? "Internet connection check karein."
+      : `${code}: ${(e && e.message) ? e.message : "Login failed."}`;
     showAdminLoginError(friendly);
   }finally{
     $("adminLoginBtn").disabled = false;
     $("adminLoginBtn").textContent = "Login";
   }
 });
-["adminEmail","adminPassword"].forEach(id=>$(id).addEventListener("keydown", e=>{ if(e.key === "Enter"){ e.preventDefault(); $("adminLoginBtn").click(); } }));
 function showAdminLoginError(msg){
   $("adminLoginError").textContent = msg;
   $("adminLoginError").classList.remove("hidden");
 }
 
-auth.onAuthStateChanged(user=>{
-  isAdmin = !!user && !user.isAnonymous;
-  if(isAdmin){
-    openAdminShell();
-  } else {
-    $("adminShell").classList.remove("show");
-    document.body.style.overflow = "";
-  }
+let authRoleCheckBusy = false;
+auth.onAuthStateChanged(async user=>{
+  if(authRoleCheckBusy) return;
+  isAdmin = false; currentRole = "visitor"; currentContributor = null;
+  $("adminShell").classList.remove("show"); $("contributorShell").classList.remove("show");
+  listenProductsForCurrentRole();
+  if(!user || user.isAnonymous){ document.body.style.overflow=""; return; }
+  authRoleCheckBusy = true;
+  try{
+    const email = String(user.email||"").toLowerCase();
+    if(email === "ua760436@gmail.com"){
+      currentRole = "admin"; isAdmin = true;
+      await migrateLegacyProductsToApproved();
+      listenProductsForCurrentRole();
+      closeOverlay("adminLoginOverlay");
+      $("adminEmail").value=""; $("adminPassword").value="";
+      openAdminShell(); toast("Welcome back, Main Admin!","success");
+    } else {
+      const snap = await db.collection("contributors").doc(user.uid).get();
+      if(!snap.exists || snap.data().active !== true){
+        await auth.signOut();
+        showAdminLoginError("Ye Gmail authorized nahi hai. Sirf Admin ke banaye accounts login kar sakte hain.");
+        return;
+      }
+      currentRole = "contributor"; currentContributor = {uid:user.uid,...snap.data()};
+      isAdmin = false; listenProductsForCurrentRole();
+      closeOverlay("adminLoginOverlay");
+      $("adminEmail").value=""; $("adminPassword").value="";
+      openContributorShell(); toast("Contributor login successful","success");
+    }
+  }catch(e){
+    console.error("Role verification failed:",e);
+    await auth.signOut().catch(()=>{});
+    showAdminLoginError("Account verify nahi ho saka. Firestore rules aur internet check karein.");
+  }finally{ authRoleCheckBusy=false; }
 });
+
+async function migrateLegacyProductsToApproved(){
+  // One-time safe migration: old admin-created products had no status field.
+  const snap = await db.collection("products").get();
+  const legacy = snap.docs.filter(d=>!d.data().status);
+  for(let i=0;i<legacy.length;i+=400){
+    const batch=db.batch();
+    legacy.slice(i,i+400).forEach(d=>batch.update(d.ref,{status:"approved",approvedAt:firebase.firestore.FieldValue.serverTimestamp()}));
+    await batch.commit();
+  }
+}
+
 
 $("adminLogoutBtn").addEventListener("click", ()=>{
   auth.signOut().then(()=>toast("Logged out","info"));
@@ -1866,7 +1988,98 @@ function openAdminShell(){
   renderAdminBanners();
   renderAdminSocial();
   renderStoreSettingsPanel();
+  renderPendingApprovals();
+  renderContributors();
 }
+
+/* ---- Contributor account management and approval queue ---- */
+function renderPendingApprovals(){
+  const wrap=$("pendingApprovalsWrap"); if(!wrap) return;
+  const pending=products.filter(p=>p.status==="pending");
+  wrap.innerHTML = pending.length ? pending.map(p=>`<div class="admin-row" style="align-items:flex-start;gap:12px;"><img src="${escapeHtml((p.imageUrls&&p.imageUrls[0])||p.imageUrl||"")}" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:10px;background:#eee;"><div class="admin-row-info"><div class="admin-row-title">${escapeHtml(p.title||"Untitled")}</div><div class="admin-row-sub">${escapeHtml(p.contributorEmail||"Contributor")} · ${escapeHtml((categories.find(c=>c.id===p.categoryId)||{}).name||"Category")}</div><div style="font-size:12px;margin-top:5px;">${escapeHtml(p.description||"")}</div><a href="${escapeHtml(p.downloadLink||"#")}" target="_blank" rel="noopener" style="font-size:11px;color:#2764cc;">Preview download link</a><div class="admin-row-actions" style="margin-top:8px;"><button class="btn-primary" data-approval="approve" data-id="${p.id}" style="width:auto;padding:8px 12px;">Approve</button><button class="btn-secondary" data-approval="reject" data-id="${p.id}" style="width:auto;padding:8px 12px;">Reject</button></div></div></div>`).join("") : '<div style="color:var(--muted);font-size:13px;">No pending submissions.</div>';
+  wrap.querySelectorAll("[data-approval]").forEach(b=>b.addEventListener("click",async()=>{
+    const id=b.dataset.id, action=b.dataset.approval; b.disabled=true;
+    try{
+      if(action==="approve") await db.collection("products").doc(id).update({status:"approved",approvedAt:firebase.firestore.FieldValue.serverTimestamp(),approvedBy:auth.currentUser.uid});
+      else await db.collection("products").doc(id).update({status:"rejected",rejectedAt:firebase.firestore.FieldValue.serverTimestamp(),rejectedBy:auth.currentUser.uid});
+      toast(action==="approve"?"Product approved and published":"Submission rejected","success");
+    }catch(e){console.error(e);toast("Could not update submission","error");}finally{b.disabled=false;}
+  }));
+}
+
+async function renderContributors(){
+  const wrap=$("contributorsListWrap"); if(!wrap || !isAdmin) return;
+  wrap.innerHTML='<div class="center-spinner"><div class="spinner"></div></div>';
+  try{
+    const snap=await db.collection("contributors").get();
+    const rows=snap.docs.map(d=>({uid:d.id,...d.data()}));
+    wrap.innerHTML='<button class="btn-primary" id="addContributorBtn" style="margin-bottom:12px;">＋ Create Contributor Account</button>'+ (rows.length?rows.map(c=>`<div class="admin-row"><div class="admin-row-info"><div class="admin-row-title">${escapeHtml(c.name||"Contributor")}</div><div class="admin-row-sub">${escapeHtml(c.email||"")} · ${c.active?"Active":"Disabled"}</div></div><div class="admin-row-actions"><button class="icon-sm-btn" data-contrib-toggle="${c.uid}" data-active="${c.active?"1":"0"}">${c.active?"OFF":"ON"}</button></div></div>`).join(""):'<div style="color:var(--muted);font-size:13px;">No contributor accounts created yet.</div>');
+    $("addContributorBtn").addEventListener("click",()=>{ $("contribEmail").value="";$("contribName").value="";$("contribPassword").value="";$("contribCreateError").classList.add("hidden");openOverlay("contributorCreateOverlay"); });
+    wrap.querySelectorAll("[data-contrib-toggle]").forEach(b=>b.addEventListener("click",async()=>{
+      const active=b.dataset.active!=="1";
+      try{await db.collection("contributors").doc(b.dataset.contribToggle).update({active,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});toast(active?"Contributor enabled":"Contributor disabled","success");renderContributors();}catch(e){console.error(e);toast("Could not update contributor","error");}
+    }));
+  }catch(e){console.error(e);wrap.textContent="Could not load contributors. Check Firestore rules.";}
+}
+
+$("createContributorBtn").addEventListener("click",async()=>{
+  const email=$("contribEmail").value.trim().toLowerCase(), name=$("contribName").value.trim(), password=$("contribPassword").value;
+  const err=$("contribCreateError"); err.classList.add("hidden");
+  if(!email || !email.includes("@") || !name || password.length<6){err.textContent="Valid Gmail, name aur kam az kam 6-character password enter karein.";err.classList.remove("hidden");return;}
+  const btn=$("createContributorBtn");btn.disabled=true;btn.textContent="Creating account...";
+  let createdUser=null;
+  try{
+    if(!isAdmin || !auth.currentUser || auth.currentUser.email.toLowerCase()!=="ua760436@gmail.com") throw new Error("Only Main Admin can create accounts.");
+    if(!contributorProvisioningApp) contributorProvisioningApp=firebase.initializeApp(firebaseConfig,"usman-contributor-provisioning");
+    const secondaryAuth=contributorProvisioningApp.auth();
+    const credential=await secondaryAuth.createUserWithEmailAndPassword(email,password); createdUser=credential.user;
+    await db.collection("contributors").doc(createdUser.uid).set({email,name,role:"contributor",active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:auth.currentUser.uid});
+    await secondaryAuth.signOut();
+    closeOverlay("contributorCreateOverlay");toast("Contributor account created successfully","success");renderContributors();
+  }catch(e){
+    console.error("Create contributor failed:",e);
+    if(createdUser && contributorProvisioningApp){try{await contributorProvisioningApp.auth().currentUser.delete();}catch(_){} }
+    const code=e.code||"";err.textContent=code.includes("email-already-in-use")?"Ye Gmail pehle se registered hai.":(e.message||"Account create nahi ho saka. Firebase Auth aur Firestore rules check karein.");err.classList.remove("hidden");
+  }finally{btn.disabled=false;btn.textContent="Create Account";}
+});
+
+function openContributorShell(){
+  $("contributorShell").classList.add("show"); document.body.style.overflow="hidden";
+  const sel=$("contribCategory");sel.innerHTML='<option value="">Select category</option>'+categories.map(c=>`<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join("");
+  renderContributorDashboard();
+}
+function renderContributorDashboard(){
+  const mine=products.filter(p=>p.createdBy===auth.currentUser?.uid);
+  $("contribTotal").textContent=mine.length;$("contribPending").textContent=mine.filter(p=>p.status==="pending").length;$("contribApproved").textContent=mine.filter(p=>p.status==="approved").length;
+  $("contribSubmissionsList").innerHTML=mine.length?mine.slice().sort((a,b)=>((b.createdAt?.seconds)||0)-((a.createdAt?.seconds)||0)).map(p=>`<div class="admin-row"><div class="admin-row-info"><div class="admin-row-title">${escapeHtml(p.title||"Untitled")}</div><div class="admin-row-sub">${escapeHtml((categories.find(c=>c.id===p.categoryId)||{}).name||"Category")} · ${p.status==="approved"?"Approved / Published":p.status==="rejected"?"Rejected":"Pending Admin Approval"}</div></div></div>`).join(""):'<div style="color:var(--muted);font-size:13px;">Abhi koi submission nahi. Upar form se free product submit karein.</div>';
+  const sel=$("contribCategory"), old=sel.value;sel.innerHTML='<option value="">Select category</option>'+categories.map(c=>`<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join("");if(categories.some(c=>c.id===old))sel.value=old;
+}
+let contributorImageUrl="";
+$("contribImage").addEventListener("change",async e=>{
+  const file=e.target.files[0];if(!file)return;
+  if(!["image/jpeg","image/png","image/webp"].includes(file.type)){toast("JPG, PNG ya WEBP image select karein","error");e.target.value="";return;}
+  $("contribUploadProgressWrap").classList.remove("hidden");$("contribUploadProgressBar").style.width="5%";
+  try{contributorImageUrl=await uploadToCloudinary(file,p=>$("contribUploadProgressBar").style.width=p+"%");$("contribImagePreview").src=contributorImageUrl;$("contribImagePreview").classList.remove("hidden");$("contribUploadProgressBar").style.width="100%";}
+  catch(err){console.error(err);toast("Image upload failed","error");contributorImageUrl="";}
+  finally{setTimeout(()=>$("contribUploadProgressWrap").classList.add("hidden"),600);}
+});
+$("contribSubmitBtn").addEventListener("click",async()=>{
+  const title=$("contribTitle").value.trim(),categoryId=$("contribCategory").value,description=$("contribDescription").value.trim(),downloadLink=$("contribDownload").value.trim(),credit=$("contribCredit").value.trim().slice(0,80);
+  const err=$("contribError");err.classList.add("hidden");
+  let valid=false;try{const u=new URL(downloadLink);valid=(u.protocol==="https:"||u.protocol==="http:")&&!!u.hostname;}catch(_){}
+  if(!title||!categoryId||!valid||!contributorImageUrl){err.textContent="Title, category, valid download link aur product image zaroori hain.";err.classList.remove("hidden");return;}
+  const btn=$("contribSubmitBtn");btn.disabled=true;btn.textContent="Submitting...";
+  try{
+    const user=auth.currentUser;if(currentRole!=="contributor"||!user||!currentContributor?.active)throw new Error("Contributor session active nahi hai. Dobara login karein.");
+    await db.collection("products").add({title,categoryId,description,credit,downloadLink,imageUrls:[contributorImageUrl],imageUrl:contributorImageUrl,deliveryType:"download",status:"pending",createdBy:user.uid,contributorEmail:user.email,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    $("contribTitle").value="";$("contribDescription").value="";$("contribDownload").value="";$("contribCredit").value="";$("contribImage").value="";$("contribImagePreview").classList.add("hidden");contributorImageUrl="";
+    toast("Submitted! Admin approval ke baad public hoga.","success");
+  }catch(e){console.error(e);err.textContent=e.code==="permission-denied"?"Submission blocked by Firestore security rules. Rules publish karne ke baad retry karein.":(e.message||"Submission failed.");err.classList.remove("hidden");}
+  finally{btn.disabled=false;btn.textContent="Submit for Admin Approval";}
+});
+$("contribNewBtn").addEventListener("click",()=>$("contribTitle").focus());
+$("contribRefreshBtn").addEventListener("click",()=>{renderContributorDashboard();toast("Submissions refreshed","info");});
+$("contribLogoutBtn").addEventListener("click",()=>auth.signOut());
 
 /* ---- Admin nav ---- */
 document.querySelectorAll(".admin-nav-item[data-panel]").forEach(btn=>{
@@ -2376,6 +2589,9 @@ $("pfSaveBtn").addEventListener("click", async ()=>{
       toast("Product updated","success");
     } else {
       payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      payload.status = "approved";
+      payload.createdBy = auth.currentUser.uid;
+      payload.approvedAt = firebase.firestore.FieldValue.serverTimestamp();
       await db.collection("products").add(payload);
       toast("Product added","success");
     }
