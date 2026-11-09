@@ -623,29 +623,31 @@ body{background:var(--page-bg)!important;}
 }
 .card-credit{margin:6px 0 8px !important; padding:6px 10px 6px 12px !important; font-size:12.5px !important; font-weight:700 !important; border-left-width:3px !important; border-radius:10px 6px 6px 10px !important;}
 .pd-credit{margin-top:10px; font-size:12.5px;}
-/* 3D product popup + shared-link highlight */
-#productOverlay{align-items:center;perspective:1300px;perspective-origin:50% 40%;}
-#productOverlay .modal{border-radius:26px;max-height:86vh;transform-style:preserve-3d;position:relative;}
-#productOverlay.show .modal{animation:pd3dIn 1s cubic-bezier(.18,.9,.25,1.08) both;}
-#productOverlay.show .modal::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:5;
-  background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);background-size:250% 100%;background-position:150% 0;
-  animation:pd3dShine 1.3s .55s ease-out 1 both;}
-#productOverlay.show{animation:pdBackdropGlow 1.2s ease-out both;}
-@keyframes pd3dIn{
-  0%{opacity:0;transform:translateZ(-600px) rotateX(-75deg) rotateY(28deg) scale(.55);filter:blur(6px);}
-  55%{opacity:1;transform:translateZ(60px) rotateX(10deg) rotateY(-7deg) scale(1.04);filter:blur(0);}
-  78%{transform:translateZ(0) rotateX(-3deg) rotateY(2deg) scale(.99);}
-  100%{opacity:1;transform:translateZ(0) rotateX(0) rotateY(0) scale(1);}
+/* Shared-link only: 3D popup + card highlight (GPU-friendly: transform/opacity only) */
+#productOverlay.deeplink-3d{align-items:center;perspective:1100px;perspective-origin:50% 45%;backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(5,3,10,.82);}
+#productOverlay.deeplink-3d .modal{border-radius:26px;max-height:86vh;transform-origin:50% 60%;will-change:transform,opacity;backface-visibility:hidden;}
+#productOverlay.deeplink-3d.show .modal{animation:pdDeepIn .85s cubic-bezier(.2,.85,.25,1) both;}
+#productOverlay.deeplink-3d.show .modal>*{animation:pdItemUp .5s cubic-bezier(.2,.8,.25,1) both;}
+#productOverlay.deeplink-3d.show .modal>*:nth-child(1){animation-delay:.30s}
+#productOverlay.deeplink-3d.show .modal>*:nth-child(2){animation-delay:.38s}
+#productOverlay.deeplink-3d.show .modal>*:nth-child(3){animation-delay:.46s}
+#productOverlay.deeplink-3d.show .modal>*:nth-child(4){animation-delay:.54s}
+#productOverlay.deeplink-3d.show .modal>*:nth-child(5){animation-delay:.60s}
+#productOverlay.deeplink-3d.show .modal>*:nth-child(n+6){animation-delay:.66s}
+@keyframes pdDeepIn{
+  0%{opacity:0;transform:translate3d(0,70px,-420px) rotateX(-58deg) rotateY(14deg) scale(.72);}
+  60%{opacity:1;transform:translate3d(0,-6px,40px) rotateX(6deg) rotateY(-3deg) scale(1.02);}
+  82%{transform:translate3d(0,2px,0) rotateX(-1.5deg) rotateY(1deg) scale(.995);}
+  100%{opacity:1;transform:translate3d(0,0,0) rotateX(0) rotateY(0) scale(1);}
 }
-@keyframes pd3dShine{0%{background-position:150% 0;opacity:1;}100%{background-position:-50% 0;opacity:0;}}
-@keyframes pdBackdropGlow{0%{background:rgba(5,3,10,0);}100%{background:rgba(5,3,10,.72);}}
-.card.deeplink-glow{position:relative;z-index:2;animation:deeplinkPulse 1.1s ease-in-out 3;border-color:#ffd34d !important;}
-@keyframes deeplinkPulse{
-  0%,100%{transform:translateY(0) scale(1);box-shadow:0 0 0 0 rgba(255,211,77,.0);}
-  50%{transform:translateY(-6px) scale(1.025);box-shadow:0 0 0 6px rgba(255,211,77,.35),0 18px 40px rgba(155,92,255,.45);}
-}
+@keyframes pdItemUp{0%{opacity:0;transform:translate3d(0,16px,0);}100%{opacity:1;transform:translate3d(0,0,0);}}
+.card.deeplink-glow{position:relative;z-index:2;animation:deeplinkLift 1s ease-in-out 3;will-change:transform;}
+.card.deeplink-glow::after{content:"";position:absolute;inset:-4px;border-radius:inherit;pointer-events:none;
+  box-shadow:0 0 0 3px #ffd34d,0 14px 34px rgba(155,92,255,.5);animation:deeplinkRing 1s ease-in-out 3;}
+@keyframes deeplinkLift{0%,100%{transform:translate3d(0,0,0) scale(1);}50%{transform:translate3d(0,-6px,0) scale(1.025);}}
+@keyframes deeplinkRing{0%,100%{opacity:.15;}50%{opacity:1;}}
 @media (prefers-reduced-motion:reduce){
-  #productOverlay.show .modal,#productOverlay.show .modal::before,.card.deeplink-glow{animation:none;}
+  #productOverlay.deeplink-3d.show .modal,#productOverlay.deeplink-3d.show .modal>*,.card.deeplink-glow,.card.deeplink-glow::after{animation:none;}
 }
 .wa-channel-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin:2px 0 8px;padding:8px 14px;border-radius:999px;background:linear-gradient(135deg,#25d366,#128c4a);color:#fff !important;font-size:12.5px;font-weight:800;text-decoration:none;box-shadow:0 4px 12px rgba(37,211,102,.35);max-width:100%;}
 .wa-channel-btn svg{width:18px;height:18px;flex:0 0 18px;fill:#fff;}
@@ -1433,18 +1435,47 @@ function getDeepLinkId(){
     return m2?m2[0]:"";
   }catch(_){ return ""; }
 }
-function runDeepLink(id){
+function clearDeepLinkUrl(){
+  // Remove ?product=... so a refresh shows the normal store (no popup, no animation).
+  try{ history.replaceState(null,"",location.pathname); }catch(_){}
+}
+function preloadDeepLinkImage(p){
+  return new Promise(resolve=>{
+    try{
+      const u=productImages(p)[0];
+      if(!u) return resolve();
+      const img=new Image();
+      img.decoding="async";
+      img.src=cldUrl(u,3840,"auto:best");
+      const t=setTimeout(resolve,1500);
+      const done=()=>{clearTimeout(t);resolve();};
+      (img.decode?img.decode():Promise.reject()).then(done).catch(done);
+    }catch(_){ resolve(); }
+  });
+}
+async function runDeepLink(id){
   deepLinkDone=true;
+  clearDeepLinkUrl();
+  const p=products.find(x=>x.id===id);
+  if(!p) return;
   const card=document.querySelector(`#productGrid .card[data-id="${CSS.escape(id)}"]`);
   const visible=card && card.offsetParent!==null;
   if(visible){
     card.scrollIntoView({behavior:"smooth",block:"center"});
-    setTimeout(()=>card.scrollIntoView({behavior:"smooth",block:"center"}),600);
     card.classList.add("deeplink-glow");
-    setTimeout(()=>card.classList.remove("deeplink-glow"),3600);
+    setTimeout(()=>card.classList.remove("deeplink-glow"),3200);
   }
-  setTimeout(()=>{ openProductDetail(id); },visible?1000:150);
+  await Promise.all([preloadDeepLinkImage(p), new Promise(r=>setTimeout(r,visible?900:100))]);
+  const ov=$("productOverlay");
+  ov.classList.add("deeplink-3d");
+  openProductDetail(id);
 }
+(function(){
+  const ov=$("productOverlay");
+  if(!ov||!window.MutationObserver) return;
+  new MutationObserver(()=>{ if(!ov.classList.contains("show") && ov.classList.contains("deeplink-3d")) ov.classList.remove("deeplink-3d"); })
+    .observe(ov,{attributes:true,attributeFilter:["class"]});
+})();
 async function fetchDeepLinkProduct(id){
   if(deepLinkFetching||deepLinkDone) return;
   deepLinkFetching=true;
@@ -1456,12 +1487,12 @@ async function fetchDeepLinkProduct(id){
       if(!products.find(x=>x.id===id)) products.push({id,...data});
       runDeepLink(id);
     } else {
-      deepLinkDone=true;
+      deepLinkDone=true; clearDeepLinkUrl();
       toast("Ye product ab available nahi hai.","error");
     }
   }catch(err){
     console.error("Deep link fetch failed:",err);
-    deepLinkDone=true;
+    deepLinkDone=true; clearDeepLinkUrl();
     toast("Product load nahi ho saka. Internet check karein.","error");
   }finally{ deepLinkFetching=false; }
 }
