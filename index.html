@@ -1302,8 +1302,9 @@ function applySettingsToDom(){
   $("floatingWhatsapp").href = wa ? ("https://wa.me/" + wa.replace(/[^0-9]/g,"")) : "#";
   $("floatingWhatsapp").style.display = wa ? "flex" : "none";
   const pm = (settings.paymentMethods || "").trim();
-  $("paymentBadge").classList.toggle("hidden", !pm);
-  $("paymentMethodsText").textContent = pm.split(",").map(s=>s.trim()).filter(Boolean).join(" · ");
+  const pmBadge=$("paymentBadge"), pmText=$("paymentMethodsText");
+  if(pmBadge) pmBadge.classList.toggle("hidden", !pm);
+  if(pmText) pmText.textContent = pm.split(",").map(s=>s.trim()).filter(Boolean).join(" · ");
   const logoImg = $("logoImg");
   logoImg.onerror = ()=>{
     logoImg.classList.add("hidden");
@@ -1422,35 +1423,58 @@ function ratingFor(id){
   return {avg:(r.sum/r.count), count:r.count};
 }
 
-let deepLinkDone=false, deepLinkNotFoundTimer=null;
+let deepLinkDone=false, deepLinkFetching=false, deepLinkTimer=null;
 function getDeepLinkId(){
-  try{ const q=new URLSearchParams(location.search); return (q.get("product")||q.get("post")||"").trim(); }catch(_){ return ""; }
+  try{
+    const q=new URLSearchParams(location.search);
+    let raw=(q.get("product")||q.get("post")||"").trim();
+    if(!raw){ const m=location.hash.match(/[#&]product=([^&]+)/); if(m) raw=decodeURIComponent(m[1]); }
+    const m2=raw.match(/[A-Za-z0-9_-]+/);   // ignore stray characters added by chat apps
+    return m2?m2[0]:"";
+  }catch(_){ return ""; }
+}
+function runDeepLink(id){
+  deepLinkDone=true;
+  const card=document.querySelector(`#productGrid .card[data-id="${CSS.escape(id)}"]`);
+  const visible=card && card.offsetParent!==null;
+  if(visible){
+    card.scrollIntoView({behavior:"smooth",block:"center"});
+    setTimeout(()=>card.scrollIntoView({behavior:"smooth",block:"center"}),600);
+    card.classList.add("deeplink-glow");
+    setTimeout(()=>card.classList.remove("deeplink-glow"),3600);
+  }
+  setTimeout(()=>{ openProductDetail(id); },visible?1000:150);
+}
+async function fetchDeepLinkProduct(id){
+  if(deepLinkFetching||deepLinkDone) return;
+  deepLinkFetching=true;
+  try{
+    const snap=await db.collection("products").doc(id).get();
+    if(deepLinkDone) return;
+    const data=snap.exists?snap.data():null;
+    if(data && (data.status==="approved"||isAdmin||data.createdBy===(auth.currentUser&&auth.currentUser.uid))){
+      if(!products.find(x=>x.id===id)) products.push({id,...data});
+      runDeepLink(id);
+    } else {
+      deepLinkDone=true;
+      toast("Ye product ab available nahi hai.","error");
+    }
+  }catch(err){
+    console.error("Deep link fetch failed:",err);
+    deepLinkDone=true;
+    toast("Product load nahi ho saka. Internet check karein.","error");
+  }finally{ deepLinkFetching=false; }
 }
 function handleDeepLink(){
   if(deepLinkDone) return;
   const id=getDeepLinkId();
   if(!id){ deepLinkDone=true; return; }
-  const p=products.find(x=>x.id===id);
-  if(!p){
-    if(!deepLinkNotFoundTimer && products.length){
-      deepLinkNotFoundTimer=setTimeout(()=>{
-        if(deepLinkDone) return;
-        deepLinkDone=true;
-        toast("Ye product ab available nahi hai.","error");
-      },5000);
-    }
-    return;
-  }
-  deepLinkDone=true;
-  if(deepLinkNotFoundTimer){ clearTimeout(deepLinkNotFoundTimer); deepLinkNotFoundTimer=null; }
-  const card=document.querySelector(`#productGrid .card[data-id="${CSS.escape(id)}"]`);
-  if(card){
-    card.scrollIntoView({behavior:"smooth",block:"center"});
-    card.classList.add("deeplink-glow");
-    setTimeout(()=>card.classList.remove("deeplink-glow"),3600);
-  }
-  setTimeout(()=>{ openProductDetail(id); },card?950:200);
+  if(products.find(x=>x.id===id)){ runDeepLink(id); return; }
+  // Not in the current list (logged-in contributor list, slow load, etc.): fetch it directly.
+  if(!deepLinkTimer){ deepLinkTimer=setTimeout(()=>{ deepLinkTimer=null; if(!deepLinkDone) fetchDeepLinkProduct(id); },1200); }
 }
+// Safety net: even if the product list never calls handleDeepLink, still try once after load.
+window.addEventListener("load",()=>{ setTimeout(()=>{ if(!deepLinkDone) handleDeepLink(); },2500); });
 function renderProducts(){
   const grid = $("productGrid");
   const list = getFilteredSortedProducts();
